@@ -1,7 +1,5 @@
 <?php
+use App\Http\Controllers\AirQualityController;
 
-use Illuminate\Support\Facades\Route;
-
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [AirQualityController::class, 'index'])->name('air-quality.index');
+Route::get('/search', [AirQualityController::class, 'search'])->name('air-quality.search');

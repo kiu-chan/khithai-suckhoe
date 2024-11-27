@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class AirQualityMeasurement extends Model
 {
-    protected $table = 'air_quality_measurements';
-    
     protected $fillable = [
         'location_code',
         'factory_id',
@@ -22,7 +20,6 @@ class AirQualityMeasurement extends Model
         'tsp_level'
     ];
 
-    // Relationship với bảng factories
     public function factory()
     {
         return $this->belongsTo(Factory::class);

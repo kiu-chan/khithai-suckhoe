@@ -10,6 +10,7 @@ class AirQualityMeasurement extends Model
     
     protected $fillable = [
         'location_code',
+        'factory_id',
         'measurement_time',
         'temperature',
         'humidity',
@@ -21,5 +22,9 @@ class AirQualityMeasurement extends Model
         'tsp_level'
     ];
 
-    public $timestamps = false; // Thêm dòng này nếu bảng không có created_at và updated_at
+    // Relationship với bảng factories
+    public function factory()
+    {
+        return $this->belongsTo(Factory::class);
+    }
 }

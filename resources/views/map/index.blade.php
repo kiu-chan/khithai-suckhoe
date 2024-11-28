@@ -45,6 +45,10 @@
                         <input type="checkbox" checked class="form-checkbox text-blue-600" id="aqiLayer">
                         <span>Air quality index</span>
                     </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" checked class="form-checkbox text-blue-600" id="thaiNguyenLayer">
+                        <span>Thai Nguyen Boundaries</span>
+                    </label>
                 </div>
             </div>
 
@@ -56,6 +60,18 @@
                     <div class="factory-item p-2 rounded cursor-pointer" data-id="{{ $factory['id'] }}">
                         <div class="font-medium">{{ $factory['name'] }}</div>
                         <div class="text-gray-600">{{ $factory['code'] }}</div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            
+            <!-- Thai Nguyen Areas List -->
+            <div class="border-t pt-4 mt-4">
+                <h3 class="font-medium mb-2">Thai Nguyen Areas</h3>
+                <div class="space-y-2 max-h-48 overflow-y-auto text-sm">
+                    @foreach($thaiNguyenBoundaries as $area)
+                    <div class="area-item p-2 rounded cursor-pointer" data-id="{{ $area['id'] }}">
+                        <div class="font-medium">{{ $area['name'] }}</div>
                     </div>
                     @endforeach
                 </div>
@@ -75,6 +91,7 @@
     <script>
     let map;
     let factoryMarkers = [];
+    let thaiNguyenPolygons = [];
     let currentInfoWindow = null;
 
     function initMap() {
@@ -100,10 +117,8 @@
 
         // Add factories to map
         const factories = @json($factories);
-        console.log('Factories data:', factories); // Debug log
-
+        
         factories.forEach(factory => {
-            // Create marker
             const marker = new google.maps.Marker({
                 position: { 
                     lat: parseFloat(factory.lat), 
@@ -121,7 +136,6 @@
                 }
             });
 
-            // Create info window
             const infoContent = `
                 <div class="info-box">
                     <h3 class="font-bold">${factory.name}</h3>
@@ -135,7 +149,6 @@
                 content: infoContent
             });
 
-            // Add click listener
             marker.addListener('click', () => {
                 if (currentInfoWindow) {
                     currentInfoWindow.close();
@@ -144,11 +157,50 @@
                 currentInfoWindow = infoWindow;
             });
 
-            // Store marker reference
             factoryMarkers.push({
                 marker: marker,
                 infoWindow: infoWindow,
                 id: factory.id
+            });
+        });
+
+        // Add Thai Nguyen boundaries
+        const thaiNguyenBoundaries = @json($thaiNguyenBoundaries);
+        
+        thaiNguyenBoundaries.forEach(area => {
+            const coordinates = area.geometry.coordinates[0][0].map(coord => ({
+                lat: coord[1],
+                lng: coord[0]
+            }));
+
+            const polygon = new google.maps.Polygon({
+                paths: coordinates,
+                strokeColor: "#FF0000",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#FF0000",
+                fillOpacity: 0.35,
+                map: map
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<div class="info-box"><h3 class="font-bold">${area.name}</h3></div>`
+            });
+
+            polygon.addListener("mouseover", (e) => {
+                polygon.setOptions({ fillOpacity: 0.5 });
+                infoWindow.setPosition(e.latLng);
+                infoWindow.open(map);
+            });
+
+            polygon.addListener("mouseout", () => {
+                polygon.setOptions({ fillOpacity: 0.35 });
+                infoWindow.close();
+            });
+
+            thaiNguyenPolygons.push({
+                polygon: polygon,
+                id: area.id
             });
         });
 
@@ -169,10 +221,31 @@
             });
         });
 
+        // Add area list click handlers
+        document.querySelectorAll('.area-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const areaId = parseInt(item.dataset.id);
+                const polygonData = thaiNguyenPolygons.find(p => p.id === areaId);
+                if (polygonData) {
+                    const bounds = new google.maps.LatLngBounds();
+                    polygonData.polygon.getPath().forEach(function(latLng) {
+                        bounds.extend(latLng);
+                    });
+                    map.fitBounds(bounds);
+                }
+            });
+        });
+
         // Handle layer visibility
         document.getElementById('factoryLayer').addEventListener('change', function() {
             factoryMarkers.forEach(item => {
                 item.marker.setVisible(this.checked);
+            });
+        });
+
+        document.getElementById('thaiNguyenLayer').addEventListener('change', function() {
+            thaiNguyenPolygons.forEach(item => {
+                item.polygon.setVisible(this.checked);
             });
         });
 
@@ -182,6 +255,6 @@
         });
     }
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=visualization&callback=initMap" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=geometry,visualization&callback=initMap" defer></script>
 </body>
 </html>

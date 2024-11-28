@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Factory;
+use App\Models\MapThaiNguyen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +16,6 @@ class MapController extends Controller
             'zoom' => 13
         ];
 
-        // Get factories with location data
         $factories = DB::table('factories')
             ->select(
                 'id',
@@ -39,9 +39,18 @@ class MapController extends Controller
                 ];
             });
 
-        // Debug data
-        // dd($factories);
+        // Get Thai Nguyen boundaries
+        $thaiNguyenBoundaries = DB::table('map_thai_nguyen')
+            ->select('id', 'name', DB::raw("ST_AsGeoJSON(geom) as geometry"))
+            ->get()
+            ->map(function($area) {
+                return [
+                    'id' => $area->id,
+                    'name' => $area->name,
+                    'geometry' => json_decode($area->geometry)
+                ];
+            });
 
-        return view('map.index', compact('mapData', 'factories'));
+        return view('map.index', compact('mapData', 'factories', 'thaiNguyenBoundaries'));
     }
 }

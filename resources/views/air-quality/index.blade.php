@@ -71,11 +71,15 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div class="grid grid-cols-1 divide-y divide-gray-200">
-                @forelse($measurements as $measurement)
-                    <div class="p-4">
-                        <!-- Hiển thị thông tin cơ bản trên mobile -->
-                        <div class="md:hidden">
+            @if($measurements->isEmpty())
+                <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-database mr-2"></i>Không có dữ liệu quan trắc
+                </div>
+            @else
+                <!-- Hiển thị dữ liệu trên mobile -->
+                <div class="md:hidden">
+                    @foreach($measurements as $measurement)
+                        <div class="p-4 border-b border-gray-200">
                             <div class="font-medium text-gray-900 mb-2">{{ $measurement->factory->name }}</div>
                             <div class="text-sm text-gray-500 mb-3">
                                 {{ Carbon\Carbon::parse($measurement->measurement_time)->format('H:i d/m/Y') }}
@@ -122,49 +126,45 @@
                                 </div>
                             </div>
                         </div>
+                    @endforeach
+                </div>
 
-                        <!-- Hiển thị dạng bảng trên desktop -->
-                        <div class="hidden md:block overflow-x-auto">
-                        <table class="min-w-full">
-    <thead>
-        <tr class="bg-gray-50 text-gray-600 text-sm leading-normal">
-            <th class="py-3 px-6 text-left">Vị trí</th>
-            <th class="py-3 px-6 text-left">Thời gian</th>
-            <th class="py-3 px-6 text-center">Nhiệt độ (°C)</th>
-            <th class="py-3 px-6 text-center">Độ ẩm (%)</th>
-            <th class="py-3 px-6 text-center">Tốc độ gió (m/s)</th>
-            <th class="py-3 px-6 text-center">Tiếng ồn (dBA)</th>
-            <th class="py-3 px-6 text-center">Độ bụi (mg/m³)</th>
-            <th class="py-3 px-6 text-center">CO (mg/m³)</th>
-            <th class="py-3 px-6 text-center">SO₂ (mg/m³)</th>
-            <th class="py-3 px-6 text-center">TSP (mg/m³)</th>
-        </tr>
-    </thead>
-    <tbody class="text-gray-600 text-sm">
-        @foreach($measurements as $measurement)
-            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="py-3 px-6">{{ $measurement->factory->name }}</td>
-                <td class="py-3 px-6">{{ Carbon\Carbon::parse($measurement->measurement_time)->format('H:i d/m/Y') }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->temperature, 1) }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->humidity, 1) }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->wind_speed, 1) }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->noise_level, 1) }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->dust_level, 2) }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->co_level, 3) }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->so2_level, 3) }}</td>
-                <td class="py-3 px-6 text-center">{{ number_format($measurement->tsp_level, 3) }}</td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
-                        </div>
-                    </div>
-                @empty
-                    <div class="p-8 text-center text-gray-500">
-                        <i class="fas fa-database mr-2"></i>Không có dữ liệu quan trắc
-                    </div>
-                @endforelse
-            </div>
+                <!-- Hiển thị dạng bảng trên desktop -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Vị trí</th>
+                                <th class="py-3 px-6 text-left">Thời gian</th>
+                                <th class="py-3 px-6 text-center">Nhiệt độ (°C)</th>
+                                <th class="py-3 px-6 text-center">Độ ẩm (%)</th>
+                                <th class="py-3 px-6 text-center">Tốc độ gió (m/s)</th>
+                                <th class="py-3 px-6 text-center">Tiếng ồn (dBA)</th>
+                                <th class="py-3 px-6 text-center">Độ bụi (mg/m³)</th>
+                                <th class="py-3 px-6 text-center">CO (mg/m³)</th>
+                                <th class="py-3 px-6 text-center">SO₂ (mg/m³)</th>
+                                <th class="py-3 px-6 text-center">TSP (mg/m³)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm">
+                            @foreach($measurements as $measurement)
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="py-3 px-6">{{ $measurement->factory->name }}</td>
+                                    <td class="py-3 px-6">{{ Carbon\Carbon::parse($measurement->measurement_time)->format('H:i d/m/Y') }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->temperature, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->humidity, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->wind_speed, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->noise_level, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->dust_level, 2) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->co_level, 3) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->so2_level, 3) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->tsp_level, 3) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
     </div>
 

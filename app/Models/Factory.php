@@ -1,5 +1,5 @@
 <?php
-
+// app/Models/Factory.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,17 +10,28 @@ class Factory extends Model
     
     protected $fillable = [
         'code',
-        'name',
+        'name', 
         'address',
         'phone',
         'capacity',
-        'chimney_height',
-        'coordinates'
+        'geom'
     ];
 
-    // Relationship với bảng air_quality_measurements
-    public function airQualityMeasurements()
+    // Convert POINT geometry to lat/lng
+    public function getLocationAttribute()
     {
-        return $this->hasMany(AirQualityMeasurement::class);
+        if (!$this->geom) return null;
+        
+        // Parse POINT format: POINT(longitude latitude)
+        preg_match('/POINT\((.*?)\s(.*?)\)/', $this->geom, $matches);
+        
+        if (count($matches) === 3) {
+            return [
+                'lng' => (float)$matches[1],
+                'lat' => (float)$matches[2]
+            ];
+        }
+        
+        return null;
     }
 }

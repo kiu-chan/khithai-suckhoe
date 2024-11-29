@@ -17,7 +17,9 @@ class AirQualityMeasurement extends Model
         'dust_level',
         'co_level',
         'so2_level',
-        'tsp_level'
+        'tsp_level',
+        'aqi',
+        'aqi_status'
     ];
 
     public function factory()

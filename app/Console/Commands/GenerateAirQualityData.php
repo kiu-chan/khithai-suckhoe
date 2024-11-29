@@ -12,7 +12,6 @@ class GenerateAirQualityData extends Command
     protected $signature = 'data:generate-air-quality';
     protected $description = 'Generate hourly air quality measurement data';
 
-    // Định nghĩa các khoảng giá trị hợp lý cho từng thông số
     private $ranges = [
         'temperature' => ['min' => 20, 'max' => 35, 'decimal' => 1],
         'humidity' => ['min' => 60, 'max' => 85, 'decimal' => 1],
@@ -24,7 +23,6 @@ class GenerateAirQualityData extends Command
         'tsp_level' => ['min' => 0.20, 'max' => 0.32, 'decimal' => 3]
     ];
 
-    // Lưu giá trị trước đó để tạo sự liên tục
     private $previousValues = [];
 
     public function handle()
@@ -38,6 +36,14 @@ class GenerateAirQualityData extends Command
             }
 
             $data = $this->generateMeasurements($factory->code);
+            
+            // Generate AQI based on pollutant levels
+            $aqi = $this->calculateAQI([
+                'dust' => $data['dust_level'],
+                'co' => $data['co_level'],
+                'so2' => $data['so2_level'],
+                'tsp' => $data['tsp_level']
+            ]);
 
             AirQualityMeasurement::create([
                 'location_code' => $factory->code,
@@ -50,13 +56,34 @@ class GenerateAirQualityData extends Command
                 'dust_level' => $data['dust_level'],
                 'co_level' => $data['co_level'],
                 'so2_level' => $data['so2_level'],
-                'tsp_level' => $data['tsp_level']
+                'tsp_level' => $data['tsp_level'],
+                'aqi' => $aqi
             ]);
 
             $this->previousValues[$factory->code] = $data;
         }
 
         $this->info('Generated air quality data for ' . $currentTime);
+    }
+
+    private function calculateAQI($pollutants)
+    {
+        // Calculate sub-indices for each pollutant
+        $indices = [
+            ceil($pollutants['dust'] * 200), // Dust index
+            ceil($pollutants['co'] * 20),    // CO index
+            ceil($pollutants['so2'] * 800),  // SO2 index
+            ceil($pollutants['tsp'] * 400)   // TSP index
+        ];
+        
+        // Add some random variation (±20%)
+        $variation = rand(-20, 20);
+        
+        // Take the maximum index and apply variation
+        $aqi = max($indices);
+        $aqi = max(0, min(500, $aqi * (1 + $variation/100)));
+        
+        return round($aqi);
     }
 
     private function generateInitialValues()
@@ -78,10 +105,7 @@ class GenerateAirQualityData extends Command
         $measurements = [];
 
         foreach ($this->ranges as $parameter => $range) {
-            // Tính toán biên độ dao động tối đa cho mỗi giờ (10% của khoảng giá trị)
             $maxHourlyChange = ($range['max'] - $range['min']) * 0.1;
-            
-            // Tạo giá trị mới trong khoảng ±maxHourlyChange so với giá trị trước đó
             $minValue = max($range['min'], $previous[$parameter] - $maxHourlyChange);
             $maxValue = min($range['max'], $previous[$parameter] + $maxHourlyChange);
             

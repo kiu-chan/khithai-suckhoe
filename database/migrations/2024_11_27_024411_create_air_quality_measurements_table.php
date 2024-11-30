@@ -6,22 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
-        Schema::create('air_quality_measurements', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('air_quality_measurements', function (Blueprint $table) {
+            $table->foreignId('monitoring_station_id')->nullable()->after('factory_id')
+                  ->constrained('monitoring_stations')->nullOnDelete();
+            
+            // Thêm index cho cột mới
+            $table->index('monitoring_station_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('air_quality_measurements');
+        Schema::table('air_quality_measurements', function (Blueprint $table) {
+            $table->dropForeign(['monitoring_station_id']);
+            $table->dropColumn('monitoring_station_id');
+        });
     }
 };

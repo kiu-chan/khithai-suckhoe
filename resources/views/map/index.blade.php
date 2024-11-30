@@ -30,6 +30,16 @@
             margin-right: 8px;
             border-radius: 4px;
         }
+        .wms-opacity-control {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
     </style>
 </head>
 <body class="h-full flex flex-col">
@@ -76,6 +86,10 @@
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" checked class="form-checkbox text-blue-600" id="aqiLayer">
                         <span>Chỉ số AQI</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" checked class="form-checkbox text-blue-600" id="wmsLayer">
+                        <span>Lớp phủ AQI</span>
                     </label>
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" checked class="form-checkbox text-blue-600" id="thaiNguyenLayer">
@@ -130,6 +144,14 @@
         <div class="flex-1 relative">
             <div id="map" class="w-full h-full"></div>
 
+            <!-- WMS Opacity Control -->
+            <div class="wms-opacity-control">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Độ mờ lớp phủ AQI
+                </label>
+                <input type="range" min="0" max="100" value="70" class="w-full" id="wmsOpacity">
+            </div>
+
             <!-- AQI Legend -->
             <div class="aqi-legend text-sm">
                 <div class="font-medium mb-2">Chú giải AQI</div>
@@ -172,6 +194,7 @@
         let factoryMarkers = [];
         let thaiNguyenPolygons = [];
         let currentInfoWindow = null;
+        let wmsLayer;
 
         function initMap() {
             // Initialize map
@@ -193,6 +216,48 @@
                     }
                 ]
             });
+
+            // Initialize WMS Layer
+            wmsLayer = new google.maps.ImageMapType({
+                getTileUrl: function(coord, zoom) {
+                    const proj = map.getProjection();
+                    const zfactor = Math.pow(2, zoom);
+                    
+                    const top = proj.fromPointToLatLng(
+                        new google.maps.Point(coord.x * 256 / zfactor, coord.y * 256 / zfactor)
+                    );
+                    const bot = proj.fromPointToLatLng(
+                        new google.maps.Point((coord.x + 1) * 256 / zfactor, (coord.y + 1) * 256 / zfactor)
+                    );
+
+                    const bbox = [
+                        top.lng(),
+                        bot.lat(),
+                        bot.lng(),
+                        top.lat()
+                    ].join(',');
+
+                    return 'http://geoserver.tuaf.edu.vn/mt_thainguyen/wms' +
+                        '?service=WMS' +
+                        '&version=1.1.0' +
+                        '&request=GetMap' +
+                        '&layers=mt_thainguyen:air_cement' +
+                        '&styles=' +
+                        '&bbox=' + bbox +
+                        '&width=256' +
+                        '&height=256' +
+                        '&srs=EPSG:4326' +
+                        '&format=image/png' +
+                        '&transparent=true';
+                },
+                tileSize: new google.maps.Size(256, 256),
+                isPng: true,
+                opacity: 0.7,
+                name: 'aqiWMS'
+            });
+
+            // Add WMS layer to map
+            map.overlayMapTypes.push(wmsLayer);
 
             // Add factories to map
             const factories = @json($factories);
@@ -268,6 +333,7 @@
             // Add Thai Nguyen boundaries
             const thaiNguyenBoundaries = @json($thaiNguyenBoundaries);
             
+            // Thay thế đoạn code cũ:
             thaiNguyenBoundaries.forEach(area => {
                 const coordinates = area.geometry.coordinates[0][0].map(coord => ({
                     lat: coord[1],
@@ -284,25 +350,68 @@
                     map: map
                 });
 
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<div class="info-box">${area.name}</div>`
-                });
-
+                // Bỏ phần tạo infoWindow
                 polygon.addListener("mouseover", (e) => {
                     polygon.setOptions({ fillOpacity: 0.3 });
-                    infoWindow.setPosition(e.latLng);
-                    infoWindow.open(map);
                 });
 
                 polygon.addListener("mouseout", () => {
                     polygon.setOptions({ fillOpacity: 0.1 });
-                    infoWindow.close();
                 });
 
                 thaiNguyenPolygons.push({
                     polygon: polygon,
                     id: area.id
                 });
+            });
+
+            // Layer Controls
+            document.getElementById('factoryLayer').addEventListener('change', function() {
+                factoryMarkers.forEach(item => {
+                    item.marker.setVisible(this.checked);
+                });
+            });
+
+            document.getElementById('aqiLayer').addEventListener('change', function() {
+                factoryMarkers.forEach(item => {
+                    if (this.checked) {
+                        item.marker.setIcon({
+                            ...item.marker.getIcon(),
+                            scale: 8
+                        });
+                    } else {
+                        item.marker.setIcon({
+                            ...item.marker.getIcon(),
+                            scale: 4
+                        });
+                    }
+                });
+            });
+
+            document.getElementById('wmsLayer').addEventListener('change', function() {
+                if (this.checked) {
+                    map.overlayMapTypes.push(wmsLayer);
+                } else {
+                    const index = map.overlayMapTypes.getArray().indexOf(wmsLayer);
+                    if (index !== -1) {
+                        map.overlayMapTypes.removeAt(index);
+                    }
+                }
+            });
+
+            document.getElementById('wmsOpacity').addEventListener('input', function() {
+                wmsLayer.setOpacity(this.value / 100);
+            });
+
+            document.getElementById('thaiNguyenLayer').addEventListener('change', function() {
+                thaiNguyenPolygons.forEach(item => {
+                    item.polygon.setVisible(this.checked);
+                });
+            });
+
+            // Base map type control
+            document.getElementById('baseMapSelect').addEventListener('change', function() {
+                map.setMapTypeId(this.value);
             });
 
             // Sidebar controls
@@ -336,42 +445,18 @@
                 });
             });
 
-            // Layer visibility controls
-            document.getElementById('factoryLayer').addEventListener('change', function() {
-                factoryMarkers.forEach(item => {
-                    item.marker.setVisible(this.checked);
-                });
-            });
-
-            document.getElementById('aqiLayer').addEventListener('change', function() {
-                factoryMarkers.forEach(item => {
-                    if (this.checked) {
-                        item.marker.setIcon({
-                            ...item.marker.getIcon(),
-                            scale: 8
-                        });
-                    } else {
-                        item.marker.setIcon({
-                            ...item.marker.getIcon(),
-                            scale: 4
-                        });
-                    }
-                });
-            });
-
-            document.getElementById('thaiNguyenLayer').addEventListener('change', function() {
-                thaiNguyenPolygons.forEach(item => {
-                    item.polygon.setVisible(this.checked);
-                });
-            });
-
-            // Base map type control
-            document.getElementById('baseMapSelect').addEventListener('change', function() {
-                map.setMapTypeId(this.value);
-            });
-
             // Update last update time
             updateLastUpdateTime(factories);
+        }
+
+        function refreshWMSLayer() {
+            const overlays = map.overlayMapTypes.getArray();
+            overlays.forEach((overlay, index) => {
+                if (overlay && overlay.name === 'aqiWMS') {
+                    map.overlayMapTypes.removeAt(index);
+                    map.overlayMapTypes.insertAt(index, wmsLayer);
+                }
+            });
         }
 
         function updateLastUpdateTime(factories) {
@@ -400,18 +485,9 @@
             }
         }
 
-        // Add hover effects for sidebar items
-        document.querySelectorAll('.factory-item, .area-item').forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                item.classList.add('bg-gray-100');
-            });
-            item.addEventListener('mouseleave', () => {
-                item.classList.remove('bg-gray-100');
-            });
-        });
-
         // Auto refresh data every 5 minutes
         setInterval(() => {
+            refreshWMSLayer();
             fetch(window.location.href)
                 .then(response => response.text())
                 .then(html => {
@@ -430,46 +506,12 @@
                             });
 
                             // Update info window content
-                            const newContent = `
-                                <div class="info-box">
-                                    <h3 class="font-bold">${newFactory.name}</h3>
-                                    <p class="text-sm text-gray-600">${newFactory.code}</p>
-                                    <p class="text-sm">${newFactory.address}</p>
-                                    
-                                    ${newFactory.measurement_time ? `
-                                        <div class="mt-3 p-2 rounded" style="background-color: ${newFactory.aqi_color}20">
-                                            <div class="text-lg font-bold" style="color: ${newFactory.aqi_color}">
-                                                AQI: ${newFactory.aqi} - ${newFactory.aqi_status}
-                                            </div>
-                                            <div class="text-xs text-gray-600">
-                                                Cập nhật: ${new Date(newFactory.measurement_time).toLocaleString('vi-VN')}
-                                            </div>
-                                        </div>
-                                        <div class="mt-3 text-sm">
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <div>Nhiệt độ: ${newFactory.latest_measurements.temperature}°C</div>
-                                                <div>Độ ẩm: ${newFactory.latest_measurements.humidity}%</div>
-                                                <div>Gió: ${newFactory.latest_measurements.wind_speed} m/s</div>
-                                                <div>Tiếng ồn: ${newFactory.latest_measurements.noise_level} dBA</div>
-                                                <div>Bụi: ${newFactory.latest_measurements.dust_level} mg/m³</div>
-                                                <div>CO: ${newFactory.latest_measurements.co_level} mg/m³</div>
-                                                <div>SO₂: ${newFactory.latest_measurements.so2_level} mg/m³</div>
-                                                <div>TSP: ${newFactory.latest_measurements.tsp_level} mg/m³</div>
-                                            </div>
-                                        </div>
-                                    ` : '<div class="mt-3 text-sm text-gray-500">Chưa có dữ liệu quan trắc</div>'}
-                                </div>
-                            `;
-                            markerData.infoWindow.setContent(newContent);
+                            markerData.infoWindow.setContent(createInfoWindowContent(newFactory));
                         }
                     });
 
                     // Update last update time
                     updateLastUpdateTime(newFactories);
-
-                    // Update sidebar factory list
-                    const newFactoryList = newDoc.querySelector('.factory-list').innerHTML;
-                    document.querySelector('.factory-list').innerHTML = newFactoryList;
                 })
                 .catch(console.error);
         }, 300000); // 5 minutes

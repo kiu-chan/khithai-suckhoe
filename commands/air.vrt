@@ -1,0 +1,9 @@
+<OGRVRTDataSource>
+    <OGRVRTLayer name="air_layer">
+       <SrcDataSource>PG:host=localhost user=postgres dbname=thainguyen_mt password=yfti*m0xZYtRy3QfF)tV</SrcDataSource>
+       <SrcLayer>air_point</SrcLayer>
+       <SrcSQL>SELECT w.aqi AS value, c.x AS lng, c.y AS lat FROM kq_kk w JOIN air_point c ON c.id=w.id</SrcSQL>
+       <LayerSRS>EPSG:4326</LayerSRS>
+       <GeometryField encoding="PointFromColumns" x="lng" y="lat"/>
+    </OGRVRTLayer>
+</OGRVRTDataSource>

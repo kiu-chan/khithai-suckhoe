@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OGRVRTDataSource>
+    <OGRVRTLayer name="air_layer">
+        <SrcDataSource>/Users/hoangkhanh/Documents/code/web/khithai-suckhoe/commands/shp/temp_points.csv</SrcDataSource>
+        <SrcLayer>temp_points</SrcLayer>
+        <GeometryType>wkbPoint</GeometryType>
+        <LayerSRS>EPSG:4326</LayerSRS>
+        <Field name="longitude" src="longitude" type="Real"/>
+        <Field name="latitude" src="latitude" type="Real"/>
+        <Field name="value" src="value" type="Real"/>
+        <GeometryField encoding="PointFromColumns" x="longitude" y="latitude"/>
+    </OGRVRTLayer>
+</OGRVRTDataSource>

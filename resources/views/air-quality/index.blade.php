@@ -23,6 +23,7 @@
     </div>
 
     <div class="container mx-auto px-4 py-6">
+        <!-- Search Form -->
         <div class="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
             <form action="{{ route('air-quality.search') }}" method="GET">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
@@ -33,10 +34,12 @@
                         <select name="location_code" class="w-full rounded-lg border-gray-300 shadow-sm">
                             <option value="">Tất cả vị trí</option>
                             @foreach($factories as $factory)
+                                @if($factory)
                                 <option value="{{ $factory->code }}" 
                                     {{ request('location_code') == $factory->code ? 'selected' : '' }}>
                                     {{ $factory->name }}
                                 </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
@@ -70,28 +73,31 @@
             </form>
         </div>
 
+        <!-- Data Display -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             @if($measurements->isEmpty())
                 <div class="p-8 text-center text-gray-500">
                     <i class="fas fa-database mr-2"></i>Không có dữ liệu quan trắc
                 </div>
             @else
-                <!-- Hiển thị dữ liệu trên mobile -->
+                <!-- Mobile View -->
                 <div class="md:hidden">
                     @foreach($measurements as $measurement)
                         <div class="p-4 border-b border-gray-200">
-                            <div class="font-medium text-gray-900 mb-2">{{ $measurement->factory->name }}</div>
+                            <div class="font-medium text-gray-900 mb-2">
+                                {{ $measurement->factory ? $measurement->factory->name : 'Không có thông tin vị trí' }}
+                            </div>
                             <div class="text-sm text-gray-500 mb-3">
                                 {{ Carbon\Carbon::parse($measurement->measurement_time)->format('H:i d/m/Y') }}
                             </div>
                             <div class="grid grid-cols-2 gap-3 text-sm">
                                 <div>
                                     <span class="text-gray-500">Nhiệt độ:</span>
-                                    <span class="font-medium">{{ number_format($measurement->temperature, 1) }}°C</span>
+                                    <span class="font-medium">{{ number_format($measurement->temperature ?? 0, 1) }}°C</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500">Độ ẩm:</span>
-                                    <span class="font-medium">{{ number_format($measurement->humidity, 1) }}%</span>
+                                    <span class="font-medium">{{ number_format($measurement->humidity ?? 0, 1) }}%</span>
                                 </div>
                             </div>
                             <button onclick="toggleDetails('details-{{ $measurement->id }}')" 
@@ -102,34 +108,34 @@
                             <div id="details-{{ $measurement->id }}" class="hidden mt-3 space-y-2 text-sm">
                                 <div>
                                     <span class="text-gray-500">Tốc độ gió:</span>
-                                    <span class="font-medium">{{ number_format($measurement->wind_speed, 1) }} m/s</span>
+                                    <span class="font-medium">{{ number_format($measurement->wind_speed ?? 0, 1) }} m/s</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500">Tiếng ồn:</span>
-                                    <span class="font-medium">{{ number_format($measurement->noise_level, 1) }} dBA</span>
+                                    <span class="font-medium">{{ number_format($measurement->noise_level ?? 0, 1) }} dBA</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500">Độ bụi:</span>
-                                    <span class="font-medium">{{ number_format($measurement->dust_level, 2) }} mg/m³</span>
+                                    <span class="font-medium">{{ number_format($measurement->dust_level ?? 0, 2) }} mg/m³</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500">CO:</span>
-                                    <span class="font-medium">{{ number_format($measurement->co_level, 3) }} mg/m³</span>
+                                    <span class="font-medium">{{ number_format($measurement->co_level ?? 0, 3) }} mg/m³</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500">SO₂:</span>
-                                    <span class="font-medium">{{ number_format($measurement->so2_level, 3) }} mg/m³</span>
+                                    <span class="font-medium">{{ number_format($measurement->so2_level ?? 0, 3) }} mg/m³</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500">TSP:</span>
-                                    <span class="font-medium">{{ number_format($measurement->tsp_level, 3) }} mg/m³</span>
+                                    <span class="font-medium">{{ number_format($measurement->tsp_level ?? 0, 3) }} mg/m³</span>
                                 </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
 
-                <!-- Hiển thị dạng bảng trên desktop -->
+                <!-- Desktop View -->
                 <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full">
                         <thead>
@@ -149,16 +155,20 @@
                         <tbody class="text-gray-600 text-sm">
                             @foreach($measurements as $measurement)
                                 <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="py-3 px-6">{{ $measurement->factory->name }}</td>
-                                    <td class="py-3 px-6">{{ Carbon\Carbon::parse($measurement->measurement_time)->format('H:i d/m/Y') }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->temperature, 1) }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->humidity, 1) }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->wind_speed, 1) }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->noise_level, 1) }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->dust_level, 2) }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->co_level, 3) }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->so2_level, 3) }}</td>
-                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->tsp_level, 3) }}</td>
+                                    <td class="py-3 px-6">
+                                        {{ $measurement->factory ? $measurement->factory->name : 'Không có thông tin vị trí' }}
+                                    </td>
+                                    <td class="py-3 px-6">
+                                        {{ Carbon\Carbon::parse($measurement->measurement_time)->format('H:i d/m/Y') }}
+                                    </td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->temperature ?? 0, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->humidity ?? 0, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->wind_speed ?? 0, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->noise_level ?? 0, 1) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->dust_level ?? 0, 2) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->co_level ?? 0, 3) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->so2_level ?? 0, 3) }}</td>
+                                    <td class="py-3 px-6 text-center">{{ number_format($measurement->tsp_level ?? 0, 3) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

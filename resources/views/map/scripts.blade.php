@@ -4,6 +4,7 @@ let factoryMarkers = [];
 let thaiNguyenPolygons = [];
 let currentInfoWindow = null;
 let wmsLayer;
+let laHienLayer;
 
 function initMap() {
     // Initialize map
@@ -26,7 +27,7 @@ function initMap() {
         ]
     });
 
-    // Initialize WMS Layer
+    // Initialize WMS Layer for air cement
     wmsLayer = new google.maps.ImageMapType({
         getTileUrl: function(coord, zoom) {
             const proj = map.getProjection();
@@ -65,8 +66,48 @@ function initMap() {
         name: 'aqiWMS'
     });
 
-    // Add WMS layer to map
+    // Initialize La Hien Plume WMS Layer
+    laHienLayer = new google.maps.ImageMapType({
+        getTileUrl: function(coord, zoom) {
+            const proj = map.getProjection();
+            const zfactor = Math.pow(2, zoom);
+            
+            const top = proj.fromPointToLatLng(
+                new google.maps.Point(coord.x * 256 / zfactor, coord.y * 256 / zfactor)
+            );
+            const bot = proj.fromPointToLatLng(
+                new google.maps.Point((coord.x + 1) * 256 / zfactor, (coord.y + 1) * 256 / zfactor)
+            );
+
+            const bbox = [
+                top.lng(),
+                bot.lat(),
+                bot.lng(),
+                top.lat()
+            ].join(',');
+
+            return 'http://geoserver.tuaf.edu.vn/mt_thainguyen/wms' +
+                '?service=WMS' +
+                '&version=1.1.0' +
+                '&request=GetMap' +
+                '&layers=mt_thainguyen:la_hien_plume' +
+                '&styles=' +
+                '&bbox=' + bbox +
+                '&width=256' +
+                '&height=256' +
+                '&srs=EPSG:4326' +
+                '&format=image/png' +
+                '&transparent=true';
+        },
+        tileSize: new google.maps.Size(256, 256),
+        isPng: true,
+        opacity: 0.7,
+        name: 'laHienWMS'
+    });
+
+    // Add WMS layers to map
     map.overlayMapTypes.push(wmsLayer);
+    map.overlayMapTypes.push(laHienLayer);
 
     // Add factories to map
     const factories = @json($factories);
@@ -196,18 +237,32 @@ function initMap() {
     });
 
     document.getElementById('wmsLayer').addEventListener('change', function() {
+        const index = map.overlayMapTypes.getArray().indexOf(wmsLayer);
         if (this.checked) {
-            map.overlayMapTypes.push(wmsLayer);
+            if (index === -1) map.overlayMapTypes.push(wmsLayer);
         } else {
-            const index = map.overlayMapTypes.getArray().indexOf(wmsLayer);
-            if (index !== -1) {
-                map.overlayMapTypes.removeAt(index);
-            }
+            if (index !== -1) map.overlayMapTypes.removeAt(index);
         }
     });
 
+    document.getElementById('laHienLayer').addEventListener('change', function() {
+        const index = map.overlayMapTypes.getArray().indexOf(laHienLayer);
+        if (this.checked) {
+            if (index === -1) map.overlayMapTypes.push(laHienLayer);
+        } else {
+            if (index !== -1) map.overlayMapTypes.removeAt(index);
+        }
+    });
+
+    // WMS and La Hien layer opacity controls
     document.getElementById('wmsOpacity').addEventListener('input', function() {
-        wmsLayer.setOpacity(this.value / 100);
+        const opacity = this.value / 100;
+        wmsLayer.setOpacity(opacity);
+    });
+
+    document.getElementById('laHienOpacity').addEventListener('input', function() {
+        const opacity = this.value / 100;
+        laHienLayer.setOpacity(opacity);
     });
 
     document.getElementById('thaiNguyenLayer').addEventListener('change', function() {
@@ -258,12 +313,16 @@ function initMap() {
 
 function refreshWMSLayer() {
     const overlays = map.overlayMapTypes.getArray();
-    overlays.forEach((overlay, index) => {
-        if (overlay && overlay.name === 'aqiWMS') {
-            map.overlayMapTypes.removeAt(index);
-            map.overlayMapTypes.insertAt(index, wmsLayer);
+    for (let i = overlays.length - 1; i >= 0; i--) {
+        if (overlays[i] && overlays[i].name === 'aqiWMS') {
+            map.overlayMapTypes.removeAt(i);
+            map.overlayMapTypes.push(wmsLayer);
         }
-    });
+        if (overlays[i] && overlays[i].name === 'laHienWMS') {
+            map.overlayMapTypes.removeAt(i);
+            map.overlayMapTypes.push(laHienLayer);
+        }
+    }
 }
 
 function updateLastUpdateTime(factories) {

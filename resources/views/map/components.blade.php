@@ -38,6 +38,23 @@
         </div>
     </div>
 
+    <!-- La Hien Plume Layer Control -->
+    <div class="space-y-2 mb-6 border-t pt-4">
+        <h3 class="font-medium text-gray-700">
+            <i class="fas fa-wind mr-2"></i>Lớp phủ La Hiên
+        </h3>
+        <div class="space-y-2">
+            <label class="flex items-center space-x-2">
+                <input type="checkbox" checked class="form-checkbox text-blue-600" id="laHienLayer">
+                <span>Hiển thị lớp phủ</span>
+            </label>
+            <div class="mt-2">
+                <label class="block text-sm text-gray-600 mb-1">Độ mờ</label>
+                <input type="range" min="0" max="100" value="70" class="w-full" id="laHienOpacity">
+            </div>
+        </div>
+    </div>
+
     <!-- Factories List -->
     <div class="border-t pt-4">
         <h3 class="font-medium text-gray-700 mb-2">

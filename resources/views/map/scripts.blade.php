@@ -5,6 +5,7 @@ let thaiNguyenPolygons = [];
 let currentInfoWindow = null;
 let wmsLayer;
 let laHienLayer;
+let windOverlays = [];
 
 function initMap() {
     // Initialize map
@@ -130,6 +131,63 @@ function initMap() {
             }
         });
 
+        // Add wind direction marker
+        if (factory.measurement_time && factory.latest_measurements) {
+            const windMarkerDiv = document.createElement('div');
+            windMarkerDiv.className = 'wind-direction-marker';
+
+            const rotation = factory.latest_measurements.wind_direction ? 
+                `rotate(${factory.latest_measurements.wind_direction}deg)` : 'rotate(0deg)';
+            const speed = parseFloat(factory.latest_measurements.wind_speed);
+            
+            const getWindColor = (speed) => {
+                if (!speed) return '#808080';
+                if (speed < 0.5) return '#00ff00';
+                if (speed < 1.0) return '#ffff00';
+                if (speed < 1.5) return '#ffa500';
+                return '#ff0000';
+            };
+
+            windMarkerDiv.innerHTML = `
+                <div class="arrow-container" style="transform: ${rotation}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${getWindColor(speed)}" 
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 19V5M5 12l7-7 7 7"/>
+                    </svg>
+                </div>
+                ${speed ? `<div class="speed-label">${speed} m/s</div>` : ''}
+            `;
+
+            const windOverlay = new google.maps.OverlayView();
+            windOverlay.factoryId = factory.id;
+            
+            windOverlay.onAdd = function() {
+                this.div = windMarkerDiv;
+                const panes = this.getPanes();
+                panes.overlayImage.appendChild(windMarkerDiv);
+            };
+            
+            windOverlay.draw = function() {
+                const pos = marker.getPosition();
+                const point = this.getProjection().fromLatLngToDivPixel(pos);
+                
+                if (point) {
+                    windMarkerDiv.style.left = (point.x) + 'px';
+                    windMarkerDiv.style.top = (point.y - 30) + 'px';
+                }
+            };
+            
+            windOverlay.onRemove = function() {
+                if (this.div) {
+                    this.div.parentNode.removeChild(this.div);
+                    this.div = null;
+                }
+            };
+            
+            windOverlay.setMap(map);
+            windOverlays.push(windOverlay);
+        }
+
         const infoContent = `
             <div class="info-box">
                 <h3 class="font-bold">${factory.name}</h3>
@@ -150,6 +208,7 @@ function initMap() {
                             <div>Nhiệt độ: ${factory.latest_measurements.temperature}°C</div>
                             <div>Độ ẩm: ${factory.latest_measurements.humidity}%</div>
                             <div>Gió: ${factory.latest_measurements.wind_speed} m/s</div>
+                            <div>Hướng: ${factory.latest_measurements.wind_direction}°</div>
                             <div>Tiếng ồn: ${factory.latest_measurements.noise_level} dBA</div>
                             <div>Bụi: ${factory.latest_measurements.dust_level} mg/m³</div>
                             <div>CO: ${factory.latest_measurements.co_level} mg/m³</div>
@@ -232,6 +291,16 @@ function initMap() {
                     ...item.marker.getIcon(),
                     scale: 4
                 });
+            }
+        });
+    });
+
+    document.getElementById('windLayer').addEventListener('change', function() {
+        windOverlays.forEach(overlay => {
+            if (this.checked) {
+                overlay.setMap(map);
+            } else {
+                overlay.setMap(null);
             }
         });
     });
@@ -367,7 +436,11 @@ setInterval(() => {
                     aqi_color: item.querySelector('.rounded-full').style.backgroundColor,
                     name: item.querySelector('.font-medium').textContent.trim(),
                     measurement_time: item.querySelector('.text-xs') ? 
-                        new Date(item.querySelector('.text-xs').textContent.split('Cập nhật: ')[1]) : null
+                        new Date(item.querySelector('.text-xs').textContent.split('Cập nhật: ')[1]) : null,
+                    latest_measurements: item.querySelector('[data-wind-speed]') ? {
+                        wind_speed: parseFloat(item.querySelector('[data-wind-speed]').dataset.windSpeed),
+                        wind_direction: parseFloat(item.querySelector('[data-wind-direction]').dataset.windDirection)
+                    } : null
                 };
             });
             
@@ -380,6 +453,38 @@ setInterval(() => {
                         ...markerData.marker.getIcon(),
                         fillColor: newFactory.aqi_color
                     });
+
+                    // Update wind direction marker if wind layer is visible
+                    if (document.getElementById('windLayer').checked) {
+                        const windOverlay = windOverlays.find(overlay => overlay.factoryId === newFactory.id);
+                        if (windOverlay && windOverlay.div && newFactory.latest_measurements) {
+                            const speed = newFactory.latest_measurements.wind_speed;
+                            const direction = newFactory.latest_measurements.wind_direction;
+                            
+                            const arrowContainer = windOverlay.div.querySelector('.arrow-container');
+                            const speedLabel = windOverlay.div.querySelector('.speed-label');
+                            
+                            if (arrowContainer) {
+                                arrowContainer.style.transform = `rotate(${direction}deg)`;
+                            }
+                            if (speedLabel) {
+                                speedLabel.textContent = `${speed} m/s`;
+                            }
+
+                            // Update arrow color based on wind speed
+                            const arrow = windOverlay.div.querySelector('svg');
+                            if (arrow) {
+                                const getWindColor = (speed) => {
+                                    if (!speed) return '#808080';
+                                    if (speed < 0.5) return '#00ff00';
+                                    if (speed < 1.0) return '#ffff00';
+                                    if (speed < 1.5) return '#ffa500';
+                                    return '#ff0000';
+                                };
+                                arrow.setAttribute('stroke', getWindColor(speed));
+                            }
+                        }
+                    }
                 }
             });
 
@@ -388,4 +493,6 @@ setInterval(() => {
         })
         .catch(console.error);
 }, 300000); // 5 minutes
+
+window.initMap = initMap;
 </script>

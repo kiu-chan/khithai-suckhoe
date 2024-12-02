@@ -28,6 +28,10 @@
                 <span>Chỉ số AQI</span>
             </label>
             <label class="flex items-center space-x-2">
+                <input type="checkbox" checked class="form-checkbox text-blue-600" id="windLayer">
+                <span>Hướng gió</span>
+            </label>
+            <label class="flex items-center space-x-2">
                 <input type="checkbox" checked class="form-checkbox text-blue-600" id="wmsLayer">
                 <span>Lớp phủ AQI</span>
             </label>
@@ -74,7 +78,26 @@
                 @if($factory['measurement_time'])
                 <div class="text-xs mt-1" style="color: {{ $factory['aqi_color'] }}">
                     AQI: {{ $factory['aqi'] }} - {{ $factory['aqi_status'] }}
+                    <div class="text-gray-600">
+                        Cập nhật: {{ \Carbon\Carbon::parse($factory['measurement_time'])->format('d/m/Y H:i:s') }}
+                    </div>
                 </div>
+                @if(isset($factory['latest_measurements']))
+                <div class="text-xs mt-1 grid grid-cols-2 gap-1">
+                    <div>Nhiệt độ: {{ $factory['latest_measurements']['temperature'] ?? 'N/A' }}°C</div>
+                    <div>Độ ẩm: {{ $factory['latest_measurements']['humidity'] ?? 'N/A' }}%</div>
+                    <div data-wind-speed="{{ $factory['latest_measurements']['wind_speed'] ?? '' }}">
+                        Gió: {{ $factory['latest_measurements']['wind_speed'] ?? 'N/A' }} m/s
+                    </div>
+                    @if(isset($factory['latest_measurements']['wind_direction']))
+                    <div data-wind-direction="{{ $factory['latest_measurements']['wind_direction'] }}">
+                        Hướng: {{ $factory['latest_measurements']['wind_direction'] }}°
+                    </div>
+                    @endif
+                    <div>Bụi: {{ $factory['latest_measurements']['dust_level'] ?? 'N/A' }} mg/m³</div>
+                    <div>CO: {{ $factory['latest_measurements']['co_level'] ?? 'N/A' }} mg/m³</div>
+                </div>
+                @endif
                 @endif
             </div>
             @endforeach
@@ -136,6 +159,29 @@
             <div class="flex items-center">
                 <span class="aqi-color" style="background-color: #7E0023"></span>
                 <span>>300: Nguy hại</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wind Legend -->
+    <div class="wind-legend text-sm">
+        <div class="font-medium mb-2">Chú giải tốc độ gió</div>
+        <div class="space-y-1">
+            <div class="flex items-center">
+                <span class="wind-color" style="background-color: #00ff00"></span>
+                <span>< 0.5 m/s: Nhẹ</span>
+            </div>
+            <div class="flex items-center">
+                <span class="wind-color" style="background-color: #ffff00"></span>
+                <span>0.5-1.0 m/s: Trung bình</span>
+            </div>
+            <div class="flex items-center">
+                <span class="wind-color" style="background-color: #ffa500"></span>
+                <span>1.0-1.5 m/s: Mạnh</span>
+            </div>
+            <div class="flex items-center">
+                <span class="wind-color" style="background-color: #ff0000"></span>
+                <span>>1.5 m/s: Rất mạnh</span>
             </div>
         </div>
     </div>

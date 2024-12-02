@@ -22,6 +22,12 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('data:generate-air-quality')->hourly();
+        
+        // Chạy cập nhật mỗi giờ
+        $schedule->command('weather:sync')
+            ->hourly()
+            ->withoutOverlapping() // Tránh chạy chồng chéo
+            ->appendOutputTo(storage_path('logs/weather-sync.log'));
     }
 
     /**

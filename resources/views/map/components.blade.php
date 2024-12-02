@@ -42,6 +42,82 @@
         </div>
     </div>
 
+    <!-- Opacity Controls -->
+    <div class="space-y-2 mb-6 border-t pt-4">
+        <h3 class="font-medium text-gray-700">
+            <i class="fas fa-adjust mr-2"></i>Điều chỉnh độ mờ
+        </h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm text-gray-700 mb-2">Độ mờ lớp phủ AQI</label>
+                <input type="range" min="0" max="100" value="70" class="w-full" id="wmsOpacity">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-700 mb-2">Độ mờ lớp phủ La Hiên</label>
+                <input type="range" min="0" max="100" value="70" class="w-full" id="laHienOpacity">
+            </div>
+        </div>
+    </div>
+
+    <!-- Legends -->
+    <div class="space-y-4 mb-6 border-t pt-4">
+        <div>
+            <h3 class="font-medium text-gray-700 mb-2">
+                <i class="fas fa-info-circle mr-2"></i>Chú giải AQI
+            </h3>
+            <div class="space-y-1">
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #00E400"></span>
+                    <span>0-50: Tốt</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #FFFF00"></span>
+                    <span>51-100: Trung bình</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #FF7E00"></span>
+                    <span>101-150: Kém</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #FF0000"></span>
+                    <span>151-200: Xấu</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #8F3F97"></span>
+                    <span>201-300: Rất xấu</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #7E0023"></span>
+                    <span>>300: Nguy hại</span>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="font-medium text-gray-700 mb-2">
+                <i class="fas fa-wind mr-2"></i>Chú giải tốc độ gió
+            </h3>
+            <div class="space-y-1">
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #00ff00"></span>
+                    <span>< 0.5 m/s: Nhẹ</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #ffff00"></span>
+                    <span>0.5-1.0 m/s: Trung bình</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #ffa500"></span>
+                    <span>1.0-1.5 m/s: Mạnh</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-5 h-5 rounded mr-2" style="background-color: #ff0000"></span>
+                    <span>>1.5 m/s: Rất mạnh</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- La Hien Plume Layer Control -->
     <div class="space-y-2 mb-6 border-t pt-4">
         <h3 class="font-medium text-gray-700">
@@ -52,10 +128,6 @@
                 <input type="checkbox" checked class="form-checkbox text-blue-600" id="laHienLayer">
                 <span>Hiển thị lớp phủ</span>
             </label>
-            <div class="mt-2">
-                <label class="block text-sm text-gray-600 mb-1">Độ mờ</label>
-                <input type="range" min="0" max="100" value="70" class="w-full" id="laHienOpacity">
-            </div>
         </div>
     </div>
 
@@ -148,66 +220,4 @@
 <!-- Map Container -->
 <div class="flex-1 relative">
     <div id="map" class="w-full h-full"></div>
-
-    <!-- WMS Opacity Control -->
-    <div class="wms-opacity-control">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-            Độ mờ lớp phủ AQI
-        </label>
-        <input type="range" min="0" max="100" value="70" class="w-full" id="wmsOpacity">
-    </div>
-
-    <!-- AQI Legend -->
-    <div class="aqi-legend text-sm">
-        <div class="font-medium mb-2">Chú giải AQI</div>
-        <div class="space-y-1">
-            <div class="flex items-center">
-                <span class="aqi-color" style="background-color: #00E400"></span>
-                <span>0-50: Tốt</span>
-            </div>
-            <div class="flex items-center">
-                <span class="aqi-color" style="background-color: #FFFF00"></span>
-                <span>51-100: Trung bình</span>
-            </div>
-            <div class="flex items-center">
-                <span class="aqi-color" style="background-color: #FF7E00"></span>
-                <span>101-150: Kém</span>
-            </div>
-            <div class="flex items-center">
-                <span class="aqi-color" style="background-color: #FF0000"></span>
-                <span>151-200: Xấu</span>
-            </div>
-            <div class="flex items-center">
-                <span class="aqi-color" style="background-color: #8F3F97"></span>
-                <span>201-300: Rất xấu</span>
-            </div>
-            <div class="flex items-center">
-                <span class="aqi-color" style="background-color: #7E0023"></span>
-                <span>>300: Nguy hại</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Wind Legend -->
-    <div class="wind-legend text-sm">
-        <div class="font-medium mb-2">Chú giải tốc độ gió</div>
-        <div class="space-y-1">
-            <div class="flex items-center">
-                <span class="wind-color" style="background-color: #00ff00"></span>
-                <span>< 0.5 m/s: Nhẹ</span>
-            </div>
-            <div class="flex items-center">
-                <span class="wind-color" style="background-color: #ffff00"></span>
-                <span>0.5-1.0 m/s: Trung bình</span>
-            </div>
-            <div class="flex items-center">
-                <span class="wind-color" style="background-color: #ffa500"></span>
-                <span>1.0-1.5 m/s: Mạnh</span>
-            </div>
-            <div class="flex items-center">
-                <span class="wind-color" style="background-color: #ff0000"></span>
-                <span>>1.5 m/s: Rất mạnh</span>
-            </div>
-        </div>
-    </div>
 </div>

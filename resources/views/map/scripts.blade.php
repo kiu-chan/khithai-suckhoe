@@ -1,11 +1,12 @@
 <script>
 let map;
 let factoryMarkers = [];
+let monitoringMarkers = [];
+let windMarkers = [];
 let thaiNguyenPolygons = [];
 let currentInfoWindow = null;
 let wmsLayer;
 let laHienLayer;
-let windOverlays = [];
 
 function initMap() {
     // Initialize map
@@ -110,9 +111,110 @@ function initMap() {
     map.overlayMapTypes.push(wmsLayer);
     map.overlayMapTypes.push(laHienLayer);
 
+    // Helper function để tạo mũi tên chỉ hướng gió
+    function createWindArrow(position, windDirection, windSpeed) {
+        if (!windDirection || !windSpeed) return null;
+        
+        return new google.maps.Marker({
+            position: position,
+            map: map,
+            icon: {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                scale: 6,
+                rotation: parseFloat(windDirection),
+                fillColor: getWindColor(windSpeed),
+                fillOpacity: 0.9,
+                strokeColor: '#000000',
+                strokeWeight: 1
+            }
+        });
+    }
+
+    // Add monitoring stations to map
+    const monitoringStations = @json($monitoringStations);
+    monitoringStations.forEach(station => {
+        const marker = new google.maps.Marker({
+            position: { 
+                lat: parseFloat(station.lat), 
+                lng: parseFloat(station.lng)
+            },
+            map: map,
+            title: station.name,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: station.aqi_color,
+                fillOpacity: 0.7,
+                strokeColor: '#000000',
+                strokeWeight: 1,
+                scale: 8
+            }
+        });
+
+        // Add wind arrow if wind data exists
+        let windArrow = null;
+        if (station.latest_measurements && station.latest_measurements.wind_speed) {
+            windArrow = createWindArrow(
+                { lat: parseFloat(station.lat), lng: parseFloat(station.lng) },
+                station.latest_measurements.wind_direction,
+                station.latest_measurements.wind_speed
+            );
+        }
+
+        const infoContent = `
+            <div class="info-box">
+                <h3 class="font-bold">${station.name}</h3>
+                <p class="text-sm text-gray-600">${station.code}</p>
+                <p class="text-sm">${station.address}</p>
+                
+                ${station.measurement_time ? `
+                    <div class="mt-3 p-2 rounded" style="background-color: ${station.aqi_color}20">
+                        <div class="text-lg font-bold" style="color: ${station.aqi_color}">
+                            AQI: ${station.aqi} - ${station.aqi_status}
+                        </div>
+                        <div class="text-xs text-gray-600">
+                            Cập nhật: ${new Date(station.measurement_time).toLocaleString('vi-VN')}
+                        </div>
+                    </div>
+                    ${station.latest_measurements ? `
+                        <div class="mt-3 text-sm">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>Bụi: ${station.latest_measurements.dust_level} mg/m³</div>
+                                <div>CO: ${station.latest_measurements.co_level} mg/m³</div>
+                                <div>SO₂: ${station.latest_measurements.so2_level} mg/m³</div>
+                                <div>TSP: ${station.latest_measurements.tsp_level} mg/m³</div>
+                                ${station.latest_measurements.wind_speed ? `
+                                    <div>Gió: ${station.latest_measurements.wind_speed} m/s</div>
+                                    <div>Hướng: ${station.latest_measurements.wind_direction}°</div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                ` : '<div class="mt-3 text-sm text-gray-500">Chưa có dữ liệu đo</div>'}
+            </div>
+        `;
+
+        const infoWindow = new google.maps.InfoWindow({
+            content: infoContent
+        });
+
+        marker.addListener('click', () => {
+            if (currentInfoWindow) {
+                currentInfoWindow.close();
+            }
+            infoWindow.open(map, marker);
+            currentInfoWindow = infoWindow;
+        });
+
+        monitoringMarkers.push({
+            id: station.id,
+            marker: marker,
+            windArrow: windArrow,
+            infoWindow: infoWindow
+        });
+    });
+
     // Add factories to map
     const factories = @json($factories);
-    
     factories.forEach(factory => {
         const marker = new google.maps.Marker({
             position: { 
@@ -131,61 +233,14 @@ function initMap() {
             }
         });
 
-        // Add wind direction marker
-        if (factory.measurement_time && factory.latest_measurements) {
-            const windMarkerDiv = document.createElement('div');
-            windMarkerDiv.className = 'wind-direction-marker';
-
-            const rotation = factory.latest_measurements.wind_direction ? 
-                `rotate(${factory.latest_measurements.wind_direction}deg)` : 'rotate(0deg)';
-            const speed = parseFloat(factory.latest_measurements.wind_speed);
-            
-            const getWindColor = (speed) => {
-                if (!speed) return '#808080';
-                if (speed < 0.5) return '#00ff00';
-                if (speed < 1.0) return '#ffff00';
-                if (speed < 1.5) return '#ffa500';
-                return '#ff0000';
-            };
-
-            windMarkerDiv.innerHTML = `
-                <div class="arrow-container" style="transform: ${rotation}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${getWindColor(speed)}" 
-                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 19V5M5 12l7-7 7 7"/>
-                    </svg>
-                </div>
-                ${speed ? `<div class="speed-label">${speed} m/s</div>` : ''}
-            `;
-
-            const windOverlay = new google.maps.OverlayView();
-            windOverlay.factoryId = factory.id;
-            
-            windOverlay.onAdd = function() {
-                this.div = windMarkerDiv;
-                const panes = this.getPanes();
-                panes.overlayImage.appendChild(windMarkerDiv);
-            };
-            
-            windOverlay.draw = function() {
-                const pos = marker.getPosition();
-                const point = this.getProjection().fromLatLngToDivPixel(pos);
-                
-                if (point) {
-                    windMarkerDiv.style.left = (point.x) + 'px';
-                    windMarkerDiv.style.top = (point.y - 30) + 'px';
-                }
-            };
-            
-            windOverlay.onRemove = function() {
-                if (this.div) {
-                    this.div.parentNode.removeChild(this.div);
-                    this.div = null;
-                }
-            };
-            
-            windOverlay.setMap(map);
-            windOverlays.push(windOverlay);
+        // Add wind arrow if wind data exists
+        let windArrow = null;
+        if (factory.weather_measurements && factory.weather_measurements.wind_speed) {
+            windArrow = createWindArrow(
+                { lat: parseFloat(factory.lat), lng: parseFloat(factory.lng) },
+                factory.weather_measurements.wind_direction,
+                factory.weather_measurements.wind_speed
+            );
         }
 
         const infoContent = `
@@ -194,29 +249,39 @@ function initMap() {
                 <p class="text-sm text-gray-600">${factory.code}</p>
                 <p class="text-sm">${factory.address}</p>
                 
-                ${factory.measurement_time ? `
+                ${factory.aqi_time ? `
                     <div class="mt-3 p-2 rounded" style="background-color: ${factory.aqi_color}20">
                         <div class="text-lg font-bold" style="color: ${factory.aqi_color}">
                             AQI: ${factory.aqi} - ${factory.aqi_status}
                         </div>
                         <div class="text-xs text-gray-600">
-                            Cập nhật: ${new Date(factory.measurement_time).toLocaleString('vi-VN')}
+                            Cập nhật: ${new Date(factory.aqi_time).toLocaleString('vi-VN')}
                         </div>
                     </div>
-                    <div class="mt-3 text-sm">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>Nhiệt độ: ${factory.latest_measurements.temperature}°C</div>
-                            <div>Độ ẩm: ${factory.latest_measurements.humidity}%</div>
-                            <div>Gió: ${factory.latest_measurements.wind_speed} m/s</div>
-                            <div>Hướng: ${factory.latest_measurements.wind_direction}°</div>
-                            <div>Tiếng ồn: ${factory.latest_measurements.noise_level} dBA</div>
-                            <div>Bụi: ${factory.latest_measurements.dust_level} mg/m³</div>
-                            <div>CO: ${factory.latest_measurements.co_level} mg/m³</div>
-                            <div>SO₂: ${factory.latest_measurements.so2_level} mg/m³</div>
-                            <div>TSP: ${factory.latest_measurements.tsp_level} mg/m³</div>
+                    ${factory.latest_measurements ? `
+                        <div class="mt-3 text-sm">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>Bụi: ${factory.latest_measurements.dust_level} mg/m³</div>
+                                <div>CO: ${factory.latest_measurements.co_level} mg/m³</div>
+                                <div>SO₂: ${factory.latest_measurements.so2_level} mg/m³</div>
+                                <div>TSP: ${factory.latest_measurements.tsp_level} mg/m³</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                ` : '<div class="mt-3 text-sm text-gray-500">Chưa có dữ liệu AQI</div>'}
+
+                ${factory.weather_measurements ? `
+                    <div class="mt-3">
+                        <h4 class="font-semibold">Thông tin gió</h4>
+                        <div class="grid grid-cols-2 gap-2 text-sm mt-2">
+                            <div>Tốc độ: ${factory.weather_measurements.wind_speed} m/s</div>
+                            <div>Hướng: ${factory.weather_measurements.wind_direction}°</div>
+                        </div>
+                        <div class="text-xs text-gray-600 mt-2">
+                            Cập nhật: ${new Date(factory.weather_time).toLocaleString('vi-VN')}
                         </div>
                     </div>
-                ` : '<div class="mt-3 text-sm text-gray-500">Chưa có dữ liệu quan trắc</div>'}
+                ` : '<div class="mt-3 text-sm text-gray-500">Chưa có dữ liệu gió</div>'}
             </div>
         `;
 
@@ -233,15 +298,15 @@ function initMap() {
         });
 
         factoryMarkers.push({
+            id: factory.id,
             marker: marker,
-            infoWindow: infoWindow,
-            id: factory.id
+            windArrow: windArrow,
+            infoWindow: infoWindow
         });
     });
 
     // Add Thai Nguyen boundaries
     const thaiNguyenBoundaries = @json($thaiNguyenBoundaries);
-    
     thaiNguyenBoundaries.forEach(area => {
         const coordinates = area.geometry.coordinates[0][0].map(coord => ({
             lat: coord[1],
@@ -258,7 +323,7 @@ function initMap() {
             map: map
         });
 
-        polygon.addListener("mouseover", (e) => {
+        polygon.addListener("mouseover", () => {
             polygon.setOptions({ fillOpacity: 0.3 });
         });
 
@@ -273,34 +338,30 @@ function initMap() {
     });
 
     // Layer Controls
-    document.getElementById('factoryLayer').addEventListener('change', function() {
-        factoryMarkers.forEach(item => {
-            item.marker.setVisible(this.checked);
+    document.getElementById('aqiStationLayer').addEventListener('change', function() {
+        const isVisible = this.checked;
+        monitoringMarkers.forEach(item => {
+            item.marker.setVisible(isVisible);
         });
     });
 
-    document.getElementById('aqiLayer').addEventListener('change', function() {
+    document.getElementById('factoryLayer').addEventListener('change', function() {
+        const isVisible = this.checked;
         factoryMarkers.forEach(item => {
-            if (this.checked) {
-                item.marker.setIcon({
-                    ...item.marker.getIcon(),
-                    scale: 8
-                });
-            } else {
-                item.marker.setIcon({
-                    ...item.marker.getIcon(),
-                    scale: 4
-                });
-            }
+            item.marker.setVisible(isVisible);
         });
     });
 
     document.getElementById('windLayer').addEventListener('change', function() {
-        windOverlays.forEach(overlay => {
-            if (this.checked) {
-                overlay.setMap(map);
-            } else {
-                overlay.setMap(null);
+        const isVisible = this.checked;
+        monitoringMarkers.forEach(item => {
+            if (item.windArrow) {
+                item.windArrow.setVisible(isVisible);
+            }
+        });
+        factoryMarkers.forEach(item => {
+            if (item.windArrow) {
+                item.windArrow.setVisible(isVisible);
             }
         });
     });
@@ -323,7 +384,14 @@ function initMap() {
         }
     });
 
-    // WMS and La Hien layer opacity controls
+    document.getElementById('thaiNguyenLayer').addEventListener('change', function() {
+        const isVisible = this.checked;
+        thaiNguyenPolygons.forEach(item => {
+            item.polygon.setVisible(isVisible);
+        });
+    });
+
+    // Opacity Controls
     document.getElementById('wmsOpacity').addEventListener('input', function() {
         const opacity = this.value / 100;
         wmsLayer.setOpacity(opacity);
@@ -334,18 +402,28 @@ function initMap() {
         laHienLayer.setOpacity(opacity);
     });
 
-    document.getElementById('thaiNguyenLayer').addEventListener('change', function() {
-        thaiNguyenPolygons.forEach(item => {
-            item.polygon.setVisible(this.checked);
-        });
-    });
-
     // Base map type control
     document.getElementById('baseMapSelect').addEventListener('change', function() {
         map.setMapTypeId(this.value);
     });
 
     // Sidebar controls
+    document.querySelectorAll('.station-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const stationId = parseInt(item.dataset.id);
+            const markerData = monitoringMarkers.find(m => m.id === stationId);
+            if (markerData) {
+                map.panTo(markerData.marker.getPosition());
+                map.setZoom(15);
+                if (currentInfoWindow) {
+                    currentInfoWindow.close();
+                }
+                markerData.infoWindow.open(map, markerData.marker);
+                currentInfoWindow = markerData.infoWindow;
+            }
+        });
+    });
+
     document.querySelectorAll('.factory-item').forEach(item => {
         item.addEventListener('click', () => {
             const factoryId = parseInt(item.dataset.id);
@@ -377,122 +455,109 @@ function initMap() {
     });
 
     // Update last update time
-    updateLastUpdateTime(factories);
+    updateLastUpdateTime();
 }
 
-function refreshWMSLayer() {
-    const overlays = map.overlayMapTypes.getArray();
-    for (let i = overlays.length - 1; i >= 0; i--) {
-        if (overlays[i] && overlays[i].name === 'aqiWMS') {
-            map.overlayMapTypes.removeAt(i);
-            map.overlayMapTypes.push(wmsLayer);
-        }
-        if (overlays[i] && overlays[i].name === 'laHienWMS') {
-            map.overlayMapTypes.removeAt(i);
-            map.overlayMapTypes.push(laHienLayer);
-        }
-    }
+function getWindColor(speed) {
+    if (!speed) return '#808080';     // Màu xám cho không có dữ liệu
+    if (speed < 0.5) return '#00ff00'; // Nhẹ - xanh lá
+    if (speed < 1.0) return '#ffff00'; // Trung bình - vàng
+    if (speed < 1.5) return '#ffa500'; // Mạnh - cam
+    return '#ff0000';                  // Rất mạnh - đỏ
 }
 
-function updateLastUpdateTime(factories) {
+function updateLastUpdateTime() {
+    const lastUpdateElement = document.getElementById('lastUpdate');
     let latestTime = null;
-    factories.forEach(factory => {
-        if (factory.measurement_time) {
-            const time = new Date(factory.measurement_time);
+
+    // Check monitoring stations time
+    monitoringMarkers.forEach(marker => {
+        const station = @json($monitoringStations).find(s => s.id === marker.id);
+        if (station && station.measurement_time) {
+            const time = new Date(station.measurement_time);
             if (!latestTime || time > latestTime) {
                 latestTime = time;
             }
         }
     });
 
-    const lastUpdateElement = document.getElementById('lastUpdate');
-    if (latestTime) {
-        lastUpdateElement.textContent = latestTime.toLocaleString('vi-VN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-    } else {
-        lastUpdateElement.textContent = 'Chưa có dữ liệu';
+    // Check factories time
+    factoryMarkers.forEach(marker => {
+        const factory = @json($factories).find(f => f.id === marker.id);
+        if (factory) {
+            if (factory.aqi_time) {
+                const aqiTime = new Date(factory.aqi_time);
+                if (!latestTime || aqiTime > latestTime) {
+                    latestTime = aqiTime;
+                }
+            }
+            if (factory.weather_time) {
+                const weatherTime = new Date(factory.weather_time);
+                if (!latestTime || weatherTime > latestTime) {
+                    latestTime = weatherTime;
+                }
+            }
+        }
+    });
+
+    if (lastUpdateElement) {
+        if (latestTime) {
+            lastUpdateElement.textContent = latestTime.toLocaleString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        } else {
+            lastUpdateElement.textContent = 'Chưa có dữ liệu';
+        }
     }
 }
 
 // Auto refresh data every 5 minutes
 setInterval(() => {
-    refreshWMSLayer();
+    refreshData();
+}, 300000); // 5 minutes
+
+function refreshData() {
     fetch(window.location.href)
         .then(response => response.text())
         .then(html => {
             const parser = new DOMParser();
             const newDoc = parser.parseFromString(html, 'text/html');
-            const factoryData = document.createElement('div');
-            factoryData.innerHTML = html;
-            const newFactories = Array.from(factoryData.querySelectorAll('.factory-item')).map(item => {
-                return {
-                    id: parseInt(item.dataset.id),
-                    aqi_color: item.querySelector('.rounded-full').style.backgroundColor,
-                    name: item.querySelector('.font-medium').textContent.trim(),
-                    measurement_time: item.querySelector('.text-xs') ? 
-                        new Date(item.querySelector('.text-xs').textContent.split('Cập nhật: ')[1]) : null,
-                    latest_measurements: item.querySelector('[data-wind-speed]') ? {
-                        wind_speed: parseFloat(item.querySelector('[data-wind-speed]').dataset.windSpeed),
-                        wind_direction: parseFloat(item.querySelector('[data-wind-direction]').dataset.windDirection)
-                    } : null
-                };
-            });
             
-            // Update markers and info windows
-            newFactories.forEach(newFactory => {
-                const markerData = factoryMarkers.find(m => m.id === newFactory.id);
-                if (markerData) {
-                    // Update marker color
-                    markerData.marker.setIcon({
-                        ...markerData.marker.getIcon(),
-                        fillColor: newFactory.aqi_color
-                    });
-
-                    // Update wind direction marker if wind layer is visible
-                    if (document.getElementById('windLayer').checked) {
-                        const windOverlay = windOverlays.find(overlay => overlay.factoryId === newFactory.id);
-                        if (windOverlay && windOverlay.div && newFactory.latest_measurements) {
-                            const speed = newFactory.latest_measurements.wind_speed;
-                            const direction = newFactory.latest_measurements.wind_direction;
-                            
-                            const arrowContainer = windOverlay.div.querySelector('.arrow-container');
-                            const speedLabel = windOverlay.div.querySelector('.speed-label');
-                            
-                            if (arrowContainer) {
-                                arrowContainer.style.transform = `rotate(${direction}deg)`;
-                            }
-                            if (speedLabel) {
-                                speedLabel.textContent = `${speed} m/s`;
-                            }
-
-                            // Update arrow color based on wind speed
-                            const arrow = windOverlay.div.querySelector('svg');
-                            if (arrow) {
-                                const getWindColor = (speed) => {
-                                    if (!speed) return '#808080';
-                                    if (speed < 0.5) return '#00ff00';
-                                    if (speed < 1.0) return '#ffff00';
-                                    if (speed < 1.5) return '#ffa500';
-                                    return '#ff0000';
-                                };
-                                arrow.setAttribute('stroke', getWindColor(speed));
-                            }
-                        }
-                    }
-                }
-            });
-
+            // Refresh WMS layers
+            refreshWMSLayers();
+            
+            // Update markers and data
+            updateMarkers();
+            
             // Update last update time
-            updateLastUpdateTime(newFactories);
+            updateLastUpdateTime();
         })
-        .catch(console.error);
-}, 300000); // 5 minutes
+        .catch(error => {
+            console.error('Lỗi khi cập nhật dữ liệu:', error);
+        });
+}
 
+function refreshWMSLayers() {
+    const overlays = map.overlayMapTypes.getArray();
+    for (let i = overlays.length - 1; i >= 0; i--) {
+        if (overlays[i]) {
+            if (overlays[i].name === 'aqiWMS') {
+                map.overlayMapTypes.removeAt(i);
+                map.overlayMapTypes.push(wmsLayer);
+            }
+            if (overlays[i].name === 'laHienWMS') {
+                map.overlayMapTypes.removeAt(i);
+                map.overlayMapTypes.push(laHienLayer);
+            }
+        }
+    }
+}
+
+// Initialize map when Google Maps API is loaded
 window.initMap = initMap;
 </script>

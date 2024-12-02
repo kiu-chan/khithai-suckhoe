@@ -20,12 +20,12 @@
         </h3>
         <div class="space-y-2">
             <label class="flex items-center space-x-2">
-                <input type="checkbox" checked class="form-checkbox text-blue-600" id="factoryLayer">
-                <span>Vị trí nhà máy</span>
+                <input type="checkbox" checked class="form-checkbox text-blue-600" id="aqiStationLayer">
+                <span>Trạm quan trắc AQI</span>
             </label>
             <label class="flex items-center space-x-2">
-                <input type="checkbox" checked class="form-checkbox text-blue-600" id="aqiLayer">
-                <span>Chỉ số AQI</span>
+                <input type="checkbox" checked class="form-checkbox text-blue-600" id="factoryLayer">
+                <span>Nhà máy</span>
             </label>
             <label class="flex items-center space-x-2">
                 <input type="checkbox" checked class="form-checkbox text-blue-600" id="windLayer">
@@ -59,12 +59,47 @@
         </div>
     </div>
 
-    <!-- Factories List -->
+    <!-- AQI Monitoring Stations List -->
     <div class="border-t pt-4">
         <h3 class="font-medium text-gray-700 mb-2">
-            <i class="fas fa-industry mr-2"></i>Danh sách nhà máy
+            <i class="fas fa-map-marker mr-2"></i>Trạm quan trắc AQI
         </h3>
-        <div class="space-y-2 max-h-96 overflow-y-auto text-sm">
+        <div class="space-y-2 max-h-48 overflow-y-auto text-sm">
+            @foreach($monitoringStations as $station)
+            <div class="station-item p-2 rounded cursor-pointer hover:bg-gray-100" 
+                 data-id="{{ $station['id'] }}">
+                <div class="font-medium flex items-center">
+                    <span class="w-3 h-3 rounded-full mr-2" 
+                          style="background-color: {{ $station['aqi_color'] }}">
+                    </span>
+                    {{ $station['name'] }}
+                </div>
+                <div class="text-gray-600 text-xs mt-1">{{ $station['code'] }}</div>
+                @if($station['measurement_time'])
+                <div class="text-xs mt-1" style="color: {{ $station['aqi_color'] }}">
+                    AQI: {{ $station['aqi'] }} - {{ $station['aqi_status'] }}
+                    <div class="text-gray-600">
+                        Cập nhật: {{ $station['measurement_time'] }}
+                    </div>
+                </div>
+                @if(isset($station['latest_measurements']))
+                <div class="text-xs mt-1 grid grid-cols-2 gap-1">
+                    <div>Bụi: {{ $station['latest_measurements']['dust_level'] }} mg/m³</div>
+                    <div>CO: {{ $station['latest_measurements']['co_level'] }} mg/m³</div>
+                </div>
+                @endif
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Factories List -->
+    <div class="border-t pt-4 mt-4">
+        <h3 class="font-medium text-gray-700 mb-2">
+            <i class="fas fa-industry mr-2"></i>Nhà máy
+        </h3>
+        <div class="space-y-2 max-h-48 overflow-y-auto text-sm">
             @foreach($factories as $factory)
             <div class="factory-item p-2 rounded cursor-pointer hover:bg-gray-100" 
                  data-id="{{ $factory['id'] }}">
@@ -75,27 +110,17 @@
                     {{ $factory['name'] }}
                 </div>
                 <div class="text-gray-600 text-xs mt-1">{{ $factory['code'] }}</div>
-                @if($factory['measurement_time'])
+                @if($factory['aqi_time'])
                 <div class="text-xs mt-1" style="color: {{ $factory['aqi_color'] }}">
                     AQI: {{ $factory['aqi'] }} - {{ $factory['aqi_status'] }}
                     <div class="text-gray-600">
-                        Cập nhật: {{ \Carbon\Carbon::parse($factory['measurement_time'])->format('d/m/Y H:i:s') }}
+                        Cập nhật: {{ $factory['aqi_time'] }}
                     </div>
                 </div>
                 @if(isset($factory['latest_measurements']))
                 <div class="text-xs mt-1 grid grid-cols-2 gap-1">
-                    <div>Nhiệt độ: {{ $factory['latest_measurements']['temperature'] ?? 'N/A' }}°C</div>
-                    <div>Độ ẩm: {{ $factory['latest_measurements']['humidity'] ?? 'N/A' }}%</div>
-                    <div data-wind-speed="{{ $factory['latest_measurements']['wind_speed'] ?? '' }}">
-                        Gió: {{ $factory['latest_measurements']['wind_speed'] ?? 'N/A' }} m/s
-                    </div>
-                    @if(isset($factory['latest_measurements']['wind_direction']))
-                    <div data-wind-direction="{{ $factory['latest_measurements']['wind_direction'] }}">
-                        Hướng: {{ $factory['latest_measurements']['wind_direction'] }}°
-                    </div>
-                    @endif
-                    <div>Bụi: {{ $factory['latest_measurements']['dust_level'] ?? 'N/A' }} mg/m³</div>
-                    <div>CO: {{ $factory['latest_measurements']['co_level'] ?? 'N/A' }} mg/m³</div>
+                    <div>Bụi: {{ $factory['latest_measurements']['dust_level'] }} mg/m³</div>
+                    <div>CO: {{ $factory['latest_measurements']['co_level'] }} mg/m³</div>
                 </div>
                 @endif
                 @endif

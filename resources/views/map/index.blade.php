@@ -7,9 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     @include('map.styles')
+    <script type="module">
+        // Expose data từ PHP cho JavaScript
+        window.mapData = @json($mapData);
+        window.monitoringStations = @json($monitoringStations);
+        window.factories = @json($factories);
+        window.weatherStations = @json($weatherStations);
+        window.thaiNguyenBoundaries = @json($thaiNguyenBoundaries);
+    </script>
+    <script type="module" src="{{ asset('js/map/init.js') }}"></script>
 </head>
 <body class="h-full flex flex-col">
-    <!-- Header -->
     <!-- Header -->
     <header class="bg-gradient-to-r from-blue-600 via-teal-500 to-green-500 text-white p-4">
         <div class="container mx-auto flex justify-between items-center">
@@ -34,49 +42,47 @@
     </main>
 
     <footer class="bg-green-100 text-gray-700 py-6">
-    <div class="container mx-auto flex flex-col md:flex-row justify-between items-start md:items-center space-y-6 md:space-y-0">
-        <!-- Phần thông tin liên hệ -->
-        <div class="space-y-2">
-            <p class="flex items-center">
-                <i class="fas fa-map-marker-alt text-teal-600 mr-2"></i>
-                Copyright: GeoInformatics Research Center - TUAF, VietNam
-            </p>
-            <p class="flex items-center">
-                <i class="fas fa-phone-alt text-teal-600 mr-2"></i>
-                Phone: +84 094.03.11.03
-            </p>
-            <p class="flex items-center">
-                <i class="fas fa-envelope text-teal-600 mr-2"></i>
-                <a href="mailto:trungtamdiatinhoc@tuaf.edu.vn" class="hover:text-teal-600 underline">
-                    trungtamdiatinhoc@tuaf.edu.vn
-                </a>
-            </p>
-        </div>
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-start md:items-center space-y-6 md:space-y-0">
+            <!-- Phần thông tin liên hệ -->
+            <div class="space-y-2">
+                <p class="flex items-center">
+                    <i class="fas fa-map-marker-alt text-teal-600 mr-2"></i>
+                    Copyright: GeoInformatics Research Center - TUAF, VietNam
+                </p>
+                <p class="flex items-center">
+                    <i class="fas fa-phone-alt text-teal-600 mr-2"></i>
+                    Phone: +84 094.03.11.03
+                </p>
+                <p class="flex items-center">
+                    <i class="fas fa-envelope text-teal-600 mr-2"></i>
+                    <a href="mailto:trungtamdiatinhoc@tuaf.edu.vn" class="hover:text-teal-600 underline">
+                        trungtamdiatinhoc@tuaf.edu.vn
+                    </a>
+                </p>
+            </div>
 
-        <!-- Phần thống kê -->
-        <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-            <div class="flex items-center">
-                <i class="fas fa-signal text-teal-600 mr-2"></i>
-                <span>Online now: 2</span>
-            </div>
-            <div class="flex items-center">
-                <i class="fas fa-calendar-day text-teal-600 mr-2"></i>
-                <span>Today: 11</span>
-            </div>
-            <div class="flex items-center">
-                <i class="fas fa-calendar-alt text-teal-600 mr-2"></i>
-                <span>This month: 1813</span>
-            </div>
-            <div class="flex items-center">
-                <i class="fas fa-users text-teal-600 mr-2"></i>
-                <span>Total: 52363</span>
+            <!-- Phần thống kê -->
+            <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                <div class="flex items-center">
+                    <i class="fas fa-signal text-teal-600 mr-2"></i>
+                    <span>Online now: 2</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-day text-teal-600 mr-2"></i>
+                    <span>Today: 11</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-alt text-teal-600 mr-2"></i>
+                    <span>This month: 1813</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-users text-teal-600 mr-2"></i>
+                    <span>Total: 52363</span>
+                </div>
             </div>
         </div>
-    </div>
-</footer>
-
+    </footer>
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&callback=initMap" defer></script>
-    @include('map.scripts')
 </body>
 </html>

@@ -53,7 +53,7 @@
                 <input type="range" min="0" max="100" value="70" class="w-full" id="wmsOpacity">
             </div>
             <div>
-                <label class="block text-sm text-gray-700 mb-2">Độ mờ lớp phủ La Hiên</label>
+                <label class="block text-sm text-gray-700 mb-2">Độ mờ layer ảnh hưởng của nhà máy</label>
                 <input type="range" min="0" max="100" value="70" class="w-full" id="laHienOpacity">
             </div>
         </div>
@@ -121,7 +121,7 @@
     <!-- La Hien Plume Layer Control -->
     <div class="space-y-2 mb-6 border-t pt-4">
         <h3 class="font-medium text-gray-700">
-            <i class="fas fa-wind mr-2"></i>Lớp phủ La Hiên
+            <i class="fas fa-wind mr-2"></i>Layer ảnh hưởng của nhà máy
         </h3>
         <div class="space-y-2">
             <label class="flex items-center space-x-2">

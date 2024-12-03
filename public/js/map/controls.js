@@ -56,6 +56,50 @@ export class ControlManager {
             }
         });
 
+        // La Hien Layer
+        document.getElementById('laHienLayer').addEventListener('change', (e) => {
+            const index = this.map.overlayMapTypes.getArray()
+                .indexOf(this.layerManager.caoNganLayer);
+            if (e.target.checked && index === -1) {
+                this.map.overlayMapTypes.push(this.layerManager.caoNganLayer);
+            } else if (!e.target.checked && index !== -1) {
+                this.map.overlayMapTypes.removeAt(index);
+            }
+        });
+
+        // La Hien Layer
+        document.getElementById('laHienLayer').addEventListener('change', (e) => {
+            const index = this.map.overlayMapTypes.getArray()
+                .indexOf(this.layerManager.quangSonLayer);
+            if (e.target.checked && index === -1) {
+                this.map.overlayMapTypes.push(this.layerManager.quangSonLayer);
+            } else if (!e.target.checked && index !== -1) {
+                this.map.overlayMapTypes.removeAt(index);
+            }
+        });
+
+        // La Hien Layer
+        document.getElementById('laHienLayer').addEventListener('change', (e) => {
+            const index = this.map.overlayMapTypes.getArray()
+                .indexOf(this.layerManager.quanTrieuLayer);
+            if (e.target.checked && index === -1) {
+                this.map.overlayMapTypes.push(this.layerManager.quanTrieuLayer);
+            } else if (!e.target.checked && index !== -1) {
+                this.map.overlayMapTypes.removeAt(index);
+            }
+        });
+
+        // La Hien Layer
+        document.getElementById('laHienLayer').addEventListener('change', (e) => {
+            const index = this.map.overlayMapTypes.getArray()
+                .indexOf(this.layerManager.luuXaLayer);
+            if (e.target.checked && index === -1) {
+                this.map.overlayMapTypes.push(this.layerManager.luuXaLayer);
+            } else if (!e.target.checked && index !== -1) {
+                this.map.overlayMapTypes.removeAt(index);
+            }
+        });
+
         // Thai Nguyen Boundary Layer
         document.getElementById('thaiNguyenLayer').addEventListener('change', (e) => {
             const isVisible = e.target.checked;
@@ -75,6 +119,22 @@ export class ControlManager {
 
         document.getElementById('laHienOpacity').addEventListener('input', (e) => {
             this.layerManager.laHienLayer.setOpacity(e.target.value / 100);
+        });
+
+        document.getElementById('laHienOpacity').addEventListener('input', (e) => {
+            this.layerManager.caoNganLayer.setOpacity(e.target.value / 100);
+        });
+
+        document.getElementById('laHienOpacity').addEventListener('input', (e) => {
+            this.layerManager.quangSonLayer.setOpacity(e.target.value / 100);
+        });
+
+        document.getElementById('laHienOpacity').addEventListener('input', (e) => {
+            this.layerManager.quanTrieuLayer.setOpacity(e.target.value / 100);
+        });
+
+        document.getElementById('laHienOpacity').addEventListener('input', (e) => {
+            this.layerManager.luuXaLayer.setOpacity(e.target.value / 100);
         });
     }
 

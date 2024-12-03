@@ -3,6 +3,10 @@ export class LayerManager {
         this.map = map;
         this.wmsLayer = null;
         this.laHienLayer = null;
+        this.caoNganLayer = null;
+        this.quangSonLayer = null;
+        this.quanTrieuLayer = null;
+        this.luuXaLayer = null;
         this.thaiNguyenPolygons = [];
     }
 
@@ -17,15 +21,51 @@ export class LayerManager {
         });
 
         this.laHienLayer = new google.maps.ImageMapType({
-            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'la_hien_plume'),
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'la_hien_p'),
             tileSize: new google.maps.Size(256, 256),
             isPng: true,
             opacity: 0.7,
             name: 'laHienWMS'
         });
 
+        this.caoNganLayer = new google.maps.ImageMapType({
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'cao_ngan_p'),
+            tileSize: new google.maps.Size(256, 256),
+            isPng: true,
+            opacity: 0.7,
+            name: 'caoNganWMS'
+        });
+
+        this.quangSonLayer = new google.maps.ImageMapType({
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'quang_son_p'),
+            tileSize: new google.maps.Size(256, 256),
+            isPng: true,
+            opacity: 0.7,
+            name: 'quangSonWMS'
+        });
+
+        this.quanTrieuLayer = new google.maps.ImageMapType({
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'quan_trieu_p'),
+            tileSize: new google.maps.Size(256, 256),
+            isPng: true,
+            opacity: 0.7,
+            name: 'quanTrieuWMS'
+        });
+
+        this.luuXaLayer = new google.maps.ImageMapType({
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'luu_xa_p'),
+            tileSize: new google.maps.Size(256, 256),
+            isPng: true,
+            opacity: 0.7,
+            name: 'luuXaWMS'
+        });
+
         this.map.overlayMapTypes.push(this.wmsLayer);
         this.map.overlayMapTypes.push(this.laHienLayer);
+        this.map.overlayMapTypes.push(this.caoNganLayer);
+        this.map.overlayMapTypes.push(this.quangSonLayer);
+        this.map.overlayMapTypes.push(this.quanTrieuLayer);
+        this.map.overlayMapTypes.push(this.luuXaLayer);
     }
 
     // Lấy URL cho WMS tile
@@ -111,6 +151,22 @@ export class LayerManager {
             if (overlay?.name === 'laHienWMS') {
                 this.map.overlayMapTypes.removeAt(i);
                 this.map.overlayMapTypes.push(this.laHienLayer);
+            }
+            if (overlay?.name === 'caoNganWMS') {
+                this.map.overlayMapTypes.removeAt(i);
+                this.map.overlayMapTypes.push(this.caoNganLayer);
+            }
+            if (overlay?.name === 'quangSonWMS') {
+                this.map.overlayMapTypes.removeAt(i);
+                this.map.overlayMapTypes.push(this.quangSonLayer);
+            }
+            if (overlay?.name === 'quanTrieuWMS') {
+                this.map.overlayMapTypes.removeAt(i);
+                this.map.overlayMapTypes.push(this.quanTrieuLayer);
+            }
+            if (overlay?.name === 'luuXaWMS') {
+                this.map.overlayMapTypes.removeAt(i);
+                this.map.overlayMapTypes.push(this.luuXaLayer);
             }
         });
     }

@@ -8,6 +8,6 @@ class HealthController extends Controller
 {
     public function index()
     {
-        return view('health');
+        return view('health.index');
     }
 }

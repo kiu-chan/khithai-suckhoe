@@ -8,30 +8,40 @@ class FactoryController extends Controller
 {
     public function detail($slug)
     {
-        // Xử lý hiển thị chi tiết nhà máy dựa vào slug
-        // Ví dụ: luu-xa, quan-trieu, cao-ngan,...
-        return view('factory.detail', [
-            'factory' => $this->getFactoryData($slug)
-        ]);
-    }
-
-    private function getFactoryData($slug)
-    {
-        // Dữ liệu mẫu, trong thực tế nên lấy từ database
         $factories = [
             'luu-xa' => [
                 'name' => 'Luu Xa Cement Company',
-                'image' => 'images/factories/luu-xa.jpg',
-                'description' => 'Thông tin về nhà máy Luu Xa...',
+                'description' => 'Thông tin chi tiết về nhà máy xi măng Lưu Xá',
+                'image' => 'images/Luuxa.png'
             ],
             'quan-trieu' => [
                 'name' => 'Quan Trieu Cement Joint Stock Company',
-                'image' => 'images/factories/quan-trieu.jpg',
-                'description' => 'Thông tin về nhà máy Quan Trieu...',
+                'description' => 'Thông tin chi tiết về nhà máy xi măng Quán Triều',
+                'image' => 'images/quantrieu.png'
             ],
-            // Thêm thông tin cho các nhà máy khác
+            'cao-ngan' => [
+                'name' => 'Cao Ngan Cement Joint Stock Company',
+                'description' => 'Thông tin chi tiết về nhà máy xi măng Cao Ngạn',
+                'image' => 'images/Caongan.png'
+            ],
+            'quang-son' => [
+                'name' => 'Quang Son Cement One Member Co., Ltd',
+                'description' => 'Thông tin chi tiết về nhà máy xi măng Quang Sơn',
+                'image' => 'images/QuangSon.png'
+            ],
+            'la-hien' => [
+                'name' => 'La Hien Joint Stock Company',
+                'description' => 'Thông tin chi tiết về nhà máy xi măng La Hiên',
+                'image' => 'images/Lahien.png'
+            ]
         ];
 
-        return $factories[$slug] ?? abort(404);
+        if (!isset($factories[$slug])) {
+            abort(404);
+        }
+
+        return view('factory.detail', [
+            'factory' => $factories[$slug]
+        ]);
     }
 }

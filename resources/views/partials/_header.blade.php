@@ -25,16 +25,12 @@
                    class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('map.index') ? 'border-white' : 'border-transparent' }}">
                     GIS Map
                 </a>
-                <a href="#" 
-                   class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('emissions.*') ? 'border-white' : 'border-transparent' }}">
-                    Emissions Management
-                </a>
                 <a href="{{ route('monitoring.index') }}" 
                    class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('monitoring.index') ? 'border-white' : 'border-transparent' }}">
                     Real Time Monitoring
                 </a>
-                <a href="#" 
-                   class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('health.*') ? 'border-white' : 'border-transparent' }}">
+                <a href="{{ route('health.index') }}" 
+                   class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('health.index') ? 'border-white' : 'border-transparent' }}">
                     Health Information
                 </a>
             </nav>

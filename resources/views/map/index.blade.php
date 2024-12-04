@@ -3,6 +3,7 @@
 @section('title', 'GIS Map - Hệ thống Quan trắc Chất lượng Không khí')
 
 @section('content')
+
 <div class="flex justify-center w-full">
     <div class="w-[90%] h-[70vh] flex map-container">
         @include('map.components')

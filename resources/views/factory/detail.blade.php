@@ -9,7 +9,7 @@
         <p class="text-gray-700">{{ $factory['description'] }}</p>
         
         <div class="mt-6">
-            <a href="{{ route('health-information') }}" 
+            <a href="{{ route('health.index') }}" 
                class="inline-flex items-center text-blue-600 hover:text-blue-800">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Quay lại trang thông tin sức khỏe

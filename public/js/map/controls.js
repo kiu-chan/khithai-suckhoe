@@ -109,6 +109,27 @@ export class ControlManager {
                 }
             });
         });
+
+        document.getElementById('districtLayer').addEventListener('change', (e) => {
+            const index = this.map.overlayMapTypes.getArray()
+                .indexOf(this.layerManager.districtBoundaryLayer);
+            if (e.target.checked && index === -1) {
+                this.map.overlayMapTypes.push(this.layerManager.districtBoundaryLayer);
+            } else if (!e.target.checked && index !== -1) {
+                this.map.overlayMapTypes.removeAt(index);
+            }
+        });
+
+        // Commune Boundary Layer
+        document.getElementById('communeLayer').addEventListener('change', (e) => {
+            const index = this.map.overlayMapTypes.getArray()
+                .indexOf(this.layerManager.communeBoundaryLayer);
+            if (e.target.checked && index === -1) {
+                this.map.overlayMapTypes.push(this.layerManager.communeBoundaryLayer);
+            } else if (!e.target.checked && index !== -1) {
+                this.map.overlayMapTypes.removeAt(index);
+            }
+        });
     }
 
     // Thiết lập điều khiển độ mờ

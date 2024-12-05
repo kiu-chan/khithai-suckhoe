@@ -28,6 +28,12 @@ class Kernel extends ConsoleKernel
             ->hourly()
             ->withoutOverlapping() // Tránh chạy chồng chéo
             ->appendOutputTo(storage_path('logs/weather-sync.log'));
+
+        
+        $schedule->command('weather:update-forecasts')
+        ->everyThreeHours()
+        ->withoutOverlapping()
+        ->appendOutputTo(storage_path('logs/weather-forecasts.log'));
     }
 
     /**

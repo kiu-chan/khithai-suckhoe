@@ -47,6 +47,14 @@
                         <input type="checkbox" checked class="form-checkbox text-blue-600" id="thaiNguyenLayer">
                         <span>Ranh giới Thái Nguyên</span>
                     </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" checked class="form-checkbox text-blue-600" id="districtLayer">
+                        <span>Ranh giới huyện</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" checked class="form-checkbox text-blue-600" id="communeLayer">
+                        <span>Ranh giới xã</span>
+                    </label>
                 </div>
             </div>
         </div>

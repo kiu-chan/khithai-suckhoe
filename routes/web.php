@@ -4,6 +4,7 @@ use App\Http\Controllers\MapController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\FactoryController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\PlumeController;
 
 Route::get('/', [AirQualityController::class, 'index'])->name('air-quality.index');
 Route::get('/search', [AirQualityController::class, 'search'])->name('air-quality.search');
@@ -17,3 +18,6 @@ Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitor
 // routes/web.php
 Route::get('/health', [HealthController::class, 'index'])->name('health.index');
 Route::get('/factory/{slug}', [FactoryController::class, 'detail'])->name('factory.detail');
+
+Route::get('/plume', [PlumeController::class, 'index'])->name('plume.index');
+Route::post('/plume/generate', [PlumeController::class, 'generate'])->name('plume.generate');

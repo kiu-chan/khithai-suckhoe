@@ -1,4 +1,3 @@
-// Cấu hình mặc định cho bản đồ
 export const mapConfig = {
     styles: [
         {
@@ -12,7 +11,16 @@ export const mapConfig = {
     wmsUrl: 'http://geoserver.tuaf.edu.vn/mt_thainguyen/wms',
     
     // Thời gian refresh data (ms)
-    refreshInterval: 300000 // 5 phút
+    refreshInterval: 300000, // 5 phút
+
+    // Cấu hình icon
+    icons: {
+        factory: {
+            url: '/images/icon_nha_may.png',
+            size: 32,
+            anchor: 16
+        }
+    }
 };
 
 // Cấu hình màu sắc cho tốc độ gió
@@ -23,7 +31,6 @@ export const windSpeedColors = {
     veryHigh: '#ff0000' // > 1.5 m/s
 };
 
-// Hàm lấy màu dựa trên tốc độ gió
 export function getWindColor(speed) {
     if (!speed) return '#808080';
     if (speed < 0.5) return windSpeedColors.low;

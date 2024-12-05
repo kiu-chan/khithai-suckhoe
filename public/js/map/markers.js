@@ -70,12 +70,10 @@ export class MarkerManager {
                 map: this.map,
                 title: factory.name,
                 icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: factory.aqi_color,
-                    fillOpacity: 0.7,
-                    strokeColor: '#000000',
-                    strokeWeight: 1,
-                    scale: 8
+                    url: '/images/icon_nha_may.png',
+                    scaledSize: new google.maps.Size(32, 32),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(16, 16)
                 }
             });
 
@@ -99,10 +97,12 @@ export class MarkerManager {
                     factory.weather_measurements.wind_speed
                 );
 
-                this.windMarkers.push({
-                    code: factory.code,
-                    marker: windArrow
-                });
+                if (windArrow) {
+                    this.windMarkers.push({
+                        code: factory.code,
+                        marker: windArrow
+                    });
+                }
             }
         });
     }
@@ -120,14 +120,16 @@ export class MarkerManager {
                     station.weather_measurements.wind_speed
                 );
 
-                const infoWindow = this.createWeatherInfoWindow(station);
-                this.setupMarkerListeners(windArrow, infoWindow);
+                if (windArrow) {
+                    const infoWindow = this.createWeatherInfoWindow(station);
+                    this.setupMarkerListeners(windArrow, infoWindow);
 
-                this.windMarkers.push({
-                    code: station.code,
-                    marker: windArrow,
-                    infoWindow: infoWindow
-                });
+                    this.windMarkers.push({
+                        code: station.code,
+                        marker: windArrow,
+                        infoWindow: infoWindow
+                    });
+                }
             }
         });
     }
@@ -155,6 +157,19 @@ export class MarkerManager {
         return new google.maps.InfoWindow({ content });
     }
 
+    // Tạo cửa sổ thông tin cho nhà máy
+    createFactoryInfoWindow(factory) {
+        const content = `
+            <div class="info-box">
+                <h3 class="font-bold">${factory.name}</h3>
+                <p class="text-sm text-gray-600">${factory.code}</p>
+                ${this.createFactoryMeasurementContent(factory)}
+                ${this.createWeatherContent(factory)}
+            </div>
+        `;
+        return new google.maps.InfoWindow({ content });
+    }
+
     // Tạo nội dung đo đạc cho trạm quan trắc
     createStationMeasurementContent(station) {
         if (!station.measurement_time) {
@@ -172,19 +187,6 @@ export class MarkerManager {
             </div>
             ${this.createDetailedMeasurements(station.latest_measurements)}
         `;
-    }
-
-    // Tạo cửa sổ thông tin cho nhà máy
-    createFactoryInfoWindow(factory) {
-        const content = `
-            <div class="info-box">
-                <h3 class="font-bold">${factory.name}</h3>
-                <p class="text-sm text-gray-600">${factory.code}</p>
-                ${this.createFactoryMeasurementContent(factory)}
-                ${this.createWeatherContent(factory)}
-            </div>
-        `;
-        return new google.maps.InfoWindow({ content });
     }
 
     // Tạo nội dung đo đạc cho nhà máy
@@ -278,7 +280,6 @@ export class MarkerManager {
 
     // Làm mới trạng thái markers
     refreshMarkers() {
-        // Cập nhật trạng thái các markers khi cần
         this.monitoringMarkers.forEach(item => item.marker.setMap(this.map));
         this.factoryMarkers.forEach(item => item.marker.setMap(this.map));
         this.windMarkers.forEach(item => item.marker.setMap(this.map));

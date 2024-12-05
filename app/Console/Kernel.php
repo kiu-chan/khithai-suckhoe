@@ -34,6 +34,9 @@ class Kernel extends ConsoleKernel
         ->everyThreeHours()
         ->withoutOverlapping()
         ->appendOutputTo(storage_path('logs/weather-forecasts.log'));
+
+
+        $schedule->command('plumes:generate')->hourly();
     }
 
     /**

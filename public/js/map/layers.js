@@ -7,11 +7,30 @@ export class LayerManager {
         this.quangSonLayer = null;
         this.quanTrieuLayer = null;
         this.luuXaLayer = null;
+        this.districtBoundaryLayer = null; // Layer ranh giới huyện
+        this.communeBoundaryLayer = null;  // Layer ranh giới xã
         this.thaiNguyenPolygons = [];
     }
 
     // Khởi tạo WMS Layer
     initWMSLayer() {
+        // Add district boundary layer
+        this.districtBoundaryLayer = new google.maps.ImageMapType({
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'hc_huyen'),
+            tileSize: new google.maps.Size(256, 256),
+            isPng: true,
+            opacity: 0.7,
+            name: 'districtWMS'
+        });
+
+        // Add commune boundary layer
+        this.communeBoundaryLayer = new google.maps.ImageMapType({
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'hc_xa'),
+            tileSize: new google.maps.Size(256, 256),
+            isPng: true,
+            opacity: 0.7,
+            name: 'communeWMS'
+        });
         this.wmsLayer = new google.maps.ImageMapType({
             getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'air_cement'),
             tileSize: new google.maps.Size(256, 256),
@@ -60,6 +79,9 @@ export class LayerManager {
             name: 'luuXaWMS'
         });
 
+        //trên bản đồ sẽ hiển thị theo thứ tự được sắp xếp như này
+        this.map.overlayMapTypes.push(this.districtBoundaryLayer);
+        this.map.overlayMapTypes.push(this.communeBoundaryLayer);
         this.map.overlayMapTypes.push(this.wmsLayer);
         this.map.overlayMapTypes.push(this.laHienLayer);
         this.map.overlayMapTypes.push(this.caoNganLayer);
@@ -167,6 +189,14 @@ export class LayerManager {
             if (overlay?.name === 'luuXaWMS') {
                 this.map.overlayMapTypes.removeAt(i);
                 this.map.overlayMapTypes.push(this.luuXaLayer);
+            }
+            if (overlay?.name === 'districtWMS') {
+                this.map.overlayMapTypes.removeAt(i);
+                this.map.overlayMapTypes.push(this.districtBoundaryLayer);
+            }
+            if (overlay?.name === 'communeWMS') {
+                this.map.overlayMapTypes.removeAt(i);
+                this.map.overlayMapTypes.push(this.communeBoundaryLayer);
             }
         });
     }

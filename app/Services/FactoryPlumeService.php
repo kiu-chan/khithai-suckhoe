@@ -26,35 +26,35 @@ class FactoryPlumeService
 
         // Cấu hình các thông số kỹ thuật của các nhà máy
         $this->factories = [
-            'luu-xa' => [
+            'luu_xa' => [
                 'code' => 'KLV.05',
                 'stack_height' => 150,      // Chiều cao ống khói (m)
                 'stack_diameter' => 8,      // Đường kính ống khói (m)
                 'stack_temp' => 180,        // Nhiệt độ khí thải (°C)
                 'stack_velocity' => 25,     // Vận tốc khí thải (m/s)
             ],
-            'cao-ngan' => [
+            'cao_ngan' => [
                 'code' => 'KLV.03',
                 'stack_height' => 145,
                 'stack_diameter' => 7.5,
                 'stack_temp' => 175,
                 'stack_velocity' => 23,
             ],
-            'quan-trieu' => [
+            'quan_trieu' => [
                 'code' => 'KLV.04',
                 'stack_height' => 140,
                 'stack_diameter' => 7,
                 'stack_temp' => 170,
                 'stack_velocity' => 22,
             ],
-            'la-hien' => [
+            'la_hien' => [
                 'code' => 'KLV.02',
                 'stack_height' => 135,
                 'stack_diameter' => 6.5,
                 'stack_temp' => 165,
                 'stack_velocity' => 20,
             ],
-            'quang-son' => [
+            'quang_son' => [
                 'code' => 'KLV.01',
                 'stack_height' => 142,
                 'stack_diameter' => 7.2,

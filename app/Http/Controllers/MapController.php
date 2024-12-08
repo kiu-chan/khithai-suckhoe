@@ -336,12 +336,12 @@ class MapController extends Controller
     private function getAQIStatus($aqi)
     {
         if (!$aqi) return null;
-        if ($aqi <= 50) return 'Tốt';
-        if ($aqi <= 100) return 'Trung bình';
-        if ($aqi <= 150) return 'Kém';
-        if ($aqi <= 200) return 'Xấu';
-        if ($aqi <= 300) return 'Rất xấu';
-        return 'Nguy hại';
+        if ($aqi <= 50) return 'Good';
+        if ($aqi <= 100) return 'Moderate';
+        if ($aqi <= 150) return 'Poor';
+        if ($aqi <= 200) return 'Bad';
+        if ($aqi <= 300) return 'Very bad';
+        return 'Hazardous';
     }
 
     private function getAQIColor($aqi)

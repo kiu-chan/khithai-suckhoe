@@ -18,7 +18,7 @@
         <div class="container mx-auto flex justify-between items-center p-4">
             <h2 class="text-xl font-bold">
                 <i class="fas fa-chart-line mr-2"></i>
-                Hệ thống Quan trắc Chất lượng Không khí
+                Air Quality Monitoring System
             </h2>
             <nav class="flex space-x-6">
                 <a href="{{ route('map.index') }}" 

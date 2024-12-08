@@ -5,14 +5,13 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\AirQualityMeasurement;
 use App\Models\Factory;
-use App\Models\MonitoringStation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class GenerateAirQualityData extends Command
+class GenerateAirQualityData extends Command 
 {
     protected $signature = 'data:generate-air-quality';
-    protected $description = 'Generate hourly air quality measurement data for both factories and monitoring stations';
+    protected $description = 'Generate hourly air quality measurement data';
 
     private $ranges = [
         'temperature' => ['min' => 20, 'max' => 35, 'decimal' => 1],
@@ -20,21 +19,20 @@ class GenerateAirQualityData extends Command
         'wind_speed' => ['min' => 0.5, 'max' => 1.5, 'decimal' => 1],
         'noise_level' => ['min' => 65, 'max' => 85, 'decimal' => 1],
         'dust_level' => ['min' => 0.35, 'max' => 0.65, 'decimal' => 2],
-        'co_level' => ['min' => 4.8, 'max' => 5.6, 'decimal' => 3],
+        'co_level' => ['min' => 4.8, 'max' => 5.6, 'decimal' => 3], 
         'so2_level' => ['min' => 0.12, 'max' => 0.16, 'decimal' => 3],
         'tsp_level' => ['min' => 0.20, 'max' => 0.32, 'decimal' => 3]
     ];
 
-    // Điều chỉnh giới hạn cho điểm quan trắc (giả định điểm dân cư có mức ô nhiễm thấp hơn)
     private $monitoring_ranges = [
         'temperature' => ['min' => 20, 'max' => 35, 'decimal' => 1],
         'humidity' => ['min' => 60, 'max' => 85, 'decimal' => 1],
         'wind_speed' => ['min' => 0.5, 'max' => 1.5, 'decimal' => 1],
-        'noise_level' => ['min' => 55, 'max' => 75, 'decimal' => 1],  // Thấp hơn khu công nghiệp
-        'dust_level' => ['min' => 0.15, 'max' => 0.45, 'decimal' => 2], // Thấp hơn khu công nghiệp
-        'co_level' => ['min' => 2.5, 'max' => 4.0, 'decimal' => 3],    // Thấp hơn khu công nghiệp
-        'so2_level' => ['min' => 0.05, 'max' => 0.12, 'decimal' => 3], // Thấp hơn khu công nghiệp
-        'tsp_level' => ['min' => 0.10, 'max' => 0.25, 'decimal' => 3]  // Thấp hơn khu công nghiệp
+        'noise_level' => ['min' => 55, 'max' => 75, 'decimal' => 1],
+        'dust_level' => ['min' => 0.15, 'max' => 0.45, 'decimal' => 2],
+        'co_level' => ['min' => 2.5, 'max' => 4.0, 'decimal' => 3],
+        'so2_level' => ['min' => 0.05, 'max' => 0.12, 'decimal' => 3],
+        'tsp_level' => ['min' => 0.10, 'max' => 0.25, 'decimal' => 3]
     ];
 
     private $previousValues = [];
@@ -77,10 +75,8 @@ class GenerateAirQualityData extends Command
         ], $type);
 
         // Tạo bản ghi mới
-        AirQualityMeasurement::create([
+        DB::table('air_quality_measurements')->insert([
             'location_code' => $locationCode,
-            'factory_id' => $type === 'factory' ? $location->id : null,
-            'monitoring_station_id' => $type === 'monitoring' ? $location->id : null,
             'measurement_time' => $currentTime,
             'temperature' => $data['temperature'],
             'humidity' => $data['humidity'],
@@ -90,7 +86,9 @@ class GenerateAirQualityData extends Command
             'co_level' => $data['co_level'],
             'so2_level' => $data['so2_level'],
             'tsp_level' => $data['tsp_level'],
-            'aqi' => $aqi
+            'aqi' => $aqi,
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
         $this->previousValues[$locationCode] = $data;

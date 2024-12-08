@@ -34,37 +34,19 @@ class Kernel extends ConsoleKernel
         $schedule->command('weather:sync')
             ->hourly()
             ->withoutOverlapping()
-            ->appendOutputTo(storage_path('logs/weather-sync.log'))
-            ->before(function () {
-                \Log::info('Starting weather sync task');
-            })
-            ->after(function () {
-                \Log::info('Weather sync task completed');
-            });
+            ->appendOutputTo(storage_path('logs/weather-sync.log'));
 
         // Cập nhật dự báo thời tiết mỗi 3 giờ
         $schedule->command('weather:update-forecasts')
             ->everyThreeHours()
             ->withoutOverlapping()
-            ->appendOutputTo(storage_path('logs/weather-forecasts.log'))
-            ->before(function () {
-                \Log::info('Starting weather forecast update');
-            })
-            ->after(function () {
-                \Log::info('Weather forecast update completed');
-            });
+            ->appendOutputTo(storage_path('logs/weather-forecasts.log'));
 
         // Tạo plume mỗi giờ
         $schedule->command('plumes:generate')
             ->hourly()
             ->withoutOverlapping()
-            ->appendOutputTo(storage_path('logs/plumes.log'))
-            ->before(function () {
-                \Log::info('Starting plume generation');
-            })
-            ->after(function () {
-                \Log::info('Plume generation completed');
-            });
+            ->appendOutputTo(storage_path('logs/plumes.log'));
 
         // Xóa log files cũ sau 7 ngày
         $schedule->command('log:clear --days=7')

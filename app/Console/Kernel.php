@@ -13,7 +13,10 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\GenerateAirQualityData::class
+        Commands\GenerateAirQualityData::class,
+        Commands\GenerateFactoryPlumes::class,
+        Commands\SyncWeatherData::class,
+        Commands\UpdateWeatherForecasts::class
     ];
 
     /**
@@ -21,22 +24,51 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('data:generate-air-quality')->hourly();
+        // Cập nhật dữ liệu chất lượng không khí mỗi giờ
+        $schedule->command('data:generate-air-quality')
+            ->hourly()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/air-quality.log'));
         
-        // Chạy cập nhật mỗi giờ
+        // Đồng bộ dữ liệu thời tiết mỗi giờ
         $schedule->command('weather:sync')
             ->hourly()
-            ->withoutOverlapping() // Tránh chạy chồng chéo
-            ->appendOutputTo(storage_path('logs/weather-sync.log'));
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/weather-sync.log'))
+            ->before(function () {
+                \Log::info('Starting weather sync task');
+            })
+            ->after(function () {
+                \Log::info('Weather sync task completed');
+            });
 
-        
+        // Cập nhật dự báo thời tiết mỗi 3 giờ
         $schedule->command('weather:update-forecasts')
-        ->everyThreeHours()
-        ->withoutOverlapping()
-        ->appendOutputTo(storage_path('logs/weather-forecasts.log'));
+            ->everyThreeHours()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/weather-forecasts.log'))
+            ->before(function () {
+                \Log::info('Starting weather forecast update');
+            })
+            ->after(function () {
+                \Log::info('Weather forecast update completed');
+            });
 
+        // Tạo plume mỗi giờ
+        $schedule->command('plumes:generate')
+            ->hourly()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/plumes.log'))
+            ->before(function () {
+                \Log::info('Starting plume generation');
+            })
+            ->after(function () {
+                \Log::info('Plume generation completed');
+            });
 
-        $schedule->command('plumes:generate')->hourly();
+        // Xóa log files cũ sau 7 ngày
+        $schedule->command('log:clear --days=7')
+            ->daily();
     }
 
     /**

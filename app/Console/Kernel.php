@@ -16,7 +16,8 @@ class Kernel extends ConsoleKernel
         Commands\GenerateAirQualityData::class,
         Commands\GenerateFactoryPlumes::class,
         Commands\SyncWeatherData::class,
-        Commands\UpdateWeatherForecasts::class
+        Commands\UpdateWeatherForecasts::class,
+        Commands\GenerateWeatherForecastTifs::class,
     ];
 
     /**
@@ -51,7 +52,13 @@ class Kernel extends ConsoleKernel
         // Xóa log files cũ sau 7 ngày
         $schedule->command('log:clear --days=7')
             ->daily();
-    }
+
+        
+        $schedule->command('weather:generate-tifs')
+            ->hourly()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/weather-forecast-tifs.log'));
+            }
 
     /**
      * Register the commands for the application.

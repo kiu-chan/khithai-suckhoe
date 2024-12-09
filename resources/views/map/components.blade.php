@@ -1,6 +1,12 @@
 <!-- Sidebar -->
 <div class="w-64 bg-white shadow-lg p-4 overflow-y-auto sidebar">
     <!-- Base Map Selection -->
+    <div class="md:hidden flex items-center justify-between mb-4 border-b pb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Menu</h2>
+        <button class="close-sidebar text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+    </div>
     <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">
             <i class="fas fa-map mr-2"></i>Base map
@@ -248,6 +254,7 @@
 </div>
 
 <script>
+// Giữ nguyên hàm toggleSection cũ
 function toggleSection(sectionId) {
     const section = document.getElementById(sectionId);
     const icon = document.getElementById(sectionId.replace('Section', 'Icon'));
@@ -255,4 +262,16 @@ function toggleSection(sectionId) {
     section.classList.toggle('hidden');
     icon.classList.toggle('rotate-180');
 }
+
+// Thêm xử lý đóng sidebar
+document.addEventListener('DOMContentLoaded', function() {
+    const closeSidebarBtn = document.querySelector('.close-sidebar');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+        });
+    }
+});
 </script>

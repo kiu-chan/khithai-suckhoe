@@ -240,24 +240,19 @@
         left: 0;
     }
 
-    /* Overlay khi sidebar mở */
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 30;
+    .close-sidebar {
+        padding: 8px;
+        border-radius: 50%;
+        transition: background-color 0.2s;
     }
 
-    .sidebar-overlay.active {
-        display: block;
+    .close-sidebar:hover {
+        background-color: #f3f4f6;
     }
-    }
-    @media (min-width: 769px) {
-    #sidebarToggle {
+}
+
+@media (min-width: 769px) {
+    .close-sidebar {
         display: none;
     }
 }

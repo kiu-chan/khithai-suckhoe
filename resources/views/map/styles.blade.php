@@ -224,32 +224,43 @@
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
-        .aqi-legend,
-        .wind-legend,
-        .wms-opacity-control {
-            position: static;
-            margin: 10px;
-            width: auto;
-        }
-
-        .sidebar {
-            width: 100%;
-            max-height: 50vh;
-        }
-
-        .wind-direction-marker {
-            margin-top: -15px;
-        }
-
-        .wind-direction-marker .arrow-container {
-            width: 20px;
-            height: 20px;
-        }
-
-        .wind-direction-marker .speed-label {
-            font-size: 9px;
-        }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        height: 100vh;
+        width: 80% !important;
+        max-width: 320px;
+        z-index: 40;
+        transition: left 0.3s ease-in-out;
+        background: white;
     }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    /* Overlay khi sidebar mở */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 30;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+    }
+    @media (min-width: 769px) {
+    #sidebarToggle {
+        display: none;
+    }
+}
 
     /* Animation */
     @keyframes fadeIn {
@@ -259,5 +270,26 @@
 
     .fade-in {
         animation: fadeIn 0.3s ease-in-out;
+    }
+
+    #toggleSidebar {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            position: absolute;
+            left: -100%;
+            transition: left 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        #toggleSidebar {
+            display: block;
+        }
     }
 </style>

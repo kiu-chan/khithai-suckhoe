@@ -5,7 +5,10 @@
 @section('content')
 
 <div class="flex justify-center w-full">
-    <div class="w-[90%] h-[70vh] flex map-container">
+    <div class="w-[90%] h-[70vh] flex map-container relative">
+        <button id="toggleSidebar" class="absolute top-4 left-4 z-10 bg-white p-2 rounded-full shadow-md">
+            <i class="fas fa-bars"></i>
+        </button>
         @include('map.components')
     </div>
 </div>

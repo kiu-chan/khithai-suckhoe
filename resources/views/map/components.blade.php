@@ -1,5 +1,5 @@
 <!-- Sidebar -->
-<div class="w-64 bg-white shadow-lg p-4 overflow-y-auto">
+<div class="w-64 bg-white shadow-lg p-4 overflow-y-auto sidebar">
     <!-- Base Map Selection -->
     <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -234,7 +234,7 @@
                     <div class="area-item p-2 rounded cursor-pointer hover:bg-gray-100" 
                          data-id="{{ $area['id'] }}">
                         {{ $area['name'] }}
-                    </div>
+                            </div>
                     @endforeach
                 </div>
             </div>

@@ -50,4 +50,9 @@ window.initMap = function() {
     setInterval(() => {
         refreshData(map, layerManager);
     }, mapConfig.refreshInterval);
+
+    // Xử lý sự kiện click cho nút bật tắt sidebar
+    document.getElementById('toggleSidebar').addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.toggle('active');
+    });
 };

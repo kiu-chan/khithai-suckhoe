@@ -2,12 +2,14 @@ import { mapConfig } from './config.js';
 import { MarkerManager } from './markers.js';
 import { LayerManager } from './layers.js';
 import { ControlManager } from './controls.js';
+import { MapInteractions } from './mapInteractions.js';
 import { updateLastUpdateTime, refreshData } from './utils.js';
 
 let map;
 let markerManager;
 let layerManager;
 let controlManager;
+let mapInteractions;
 
 window.initMap = function() {
     const mapCenter = { 
@@ -28,6 +30,9 @@ window.initMap = function() {
     markerManager = new MarkerManager(map);
     layerManager = new LayerManager(map);
     controlManager = new ControlManager(map, markerManager, layerManager);
+    
+    // Khởi tạo map interactions
+    mapInteractions = new MapInteractions(map, markerManager, layerManager);
 
     // Khởi tạo các layer
     layerManager.initWMSLayer();

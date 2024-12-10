@@ -153,6 +153,7 @@ export class LayerManager {
 
     // Thiết lập sự kiện cho polygon
     setupPolygonListeners(polygon) {
+        // Chỉ thêm sự kiện hover, bỏ click event
         polygon.addListener("mouseover", () => {
             polygon.setOptions({ fillOpacity: 0.3 });
         });
@@ -160,6 +161,9 @@ export class LayerManager {
         polygon.addListener("mouseout", () => {
             polygon.setOptions({ fillOpacity: 0.1 });
         });
+
+        // Đặt clickable thành false để không chặn click events
+        polygon.setOptions({ clickable: false });
     }
 
     // Làm mới layer WMS

@@ -5,17 +5,17 @@
          
     <div class="relative">
         <div class="container mx-auto px-4 py-8">
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Column 1: Copyright -->
-                <div class="flex flex-col items-center justify-center">
-                    <p class="flex items-center text-center">
+                <div class="flex flex-col items-center md:items-start justify-center">
+                    <p class="flex items-center text-center md:text-left">
                         <i class="fas fa-map-marker-alt text-blue-600 mr-2"></i>
                         <span class="font-medium text-sm sm:text-base">Copyright: GeoInformatics Research Center - TUAF, VietNam</span>
                     </p>
                 </div>
 
                 <!-- Column 2: Contact Info -->
-                <div class="flex flex-col items-center justify-center">
+                <div class="flex flex-col items-center md:items-start justify-center">
                     <div class="space-y-2">
                         <p class="flex items-center">
                             <i class="fas fa-phone-alt text-blue-600 mr-2"></i>
@@ -32,8 +32,8 @@
                 </div>
 
                 <!-- Column 3: Statistics -->
-                <div class="flex flex-col items-center justify-center">
-                    <div class="grid grid-cols-2 gap-2">
+                <div class="flex flex-col items-center md:items-start justify-center">
+                    <div class="grid grid-cols-2 gap-4 md:gap-2">
                         <p class="flex items-center">
                             <i class="fas fa-signal text-blue-600 mr-2"></i>
                             <span class="font-medium text-sm sm:text-base">Online: 2</span>

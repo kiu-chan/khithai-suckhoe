@@ -20,7 +20,7 @@ window.initMap = function() {
     // Khởi tạo bản đồ
     map = new google.maps.Map(document.getElementById('map'), {
         center: mapCenter,
-        zoom: mapData.zoom,
+        zoom: 9.8,
         mapTypeId: 'terrain',
         mapTypeControl: false,
         styles: mapConfig.styles

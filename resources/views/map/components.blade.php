@@ -27,7 +27,7 @@
                 <span><i class="fas fa-layer-group mr-2"></i>Display layers</span>
                 <i class="fas fa-chevron-down transform transition-transform" id="layerIcon"></i>
             </button>
-            <div id="layerSection" class="px-4 pb-4">
+            <div id="layerSection" class="px-4 pb-4 hidden">
                 <div class="space-y-2">
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" checked class="form-checkbox text-blue-600" id="aqiStationLayer">
@@ -71,7 +71,7 @@
                 <span><i class="fas fa-adjust mr-2"></i>Opacity adjustment</span>
                 <i class="fas fa-chevron-down transform transition-transform" id="opacityIcon"></i>
             </button>
-            <div id="opacitySection" class="px-4 pb-4">
+            <div id="opacitySection" class="px-4 pb-4 hidden">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm text-gray-700 mb-2">AQI overlay opacity</label>
@@ -91,7 +91,7 @@
                 <span><i class="fas fa-map-marker mr-2"></i>AQI monitoring stations</span>
                 <i class="fas fa-chevron-down transform transition-transform" id="stationsIcon"></i>
             </button>
-            <div id="stationsSection" class="px-4 pb-4">
+            <div id="stationsSection" class="px-4 pb-4 hidden">
                 <div class="space-y-2 max-h-48 overflow-y-auto text-sm">
                     @foreach($monitoringStations as $station)
                     <div class="station-item p-2 rounded cursor-pointer hover:bg-gray-100" 
@@ -129,7 +129,7 @@
                 <span><i class="fas fa-industry mr-2"></i>Factories</span>
                 <i class="fas fa-chevron-down transform transition-transform" id="factoriesIcon"></i>
             </button>
-            <div id="factoriesSection" class="px-4 pb-4">
+            <div id="factoriesSection" class="px-4 pb-4 hidden">
                 <div class="space-y-2 max-h-48 overflow-y-auto text-sm">
                     @foreach($factories as $factory)
                     <div class="factory-item p-2 rounded cursor-pointer hover:bg-gray-100" 
@@ -169,7 +169,7 @@
                     <span><i class="fas fa-info-circle mr-2"></i>AQI legend</span>
                     <i class="fas fa-chevron-down transform transition-transform" id="aqiLegendIcon"></i>
                 </button>
-                <div id="aqiLegendSection" class="px-4 pb-4">
+                <div id="aqiLegendSection" class="px-4 pb-4 hidden">
                     <div class="space-y-1">
                         <div class="flex items-center">
                             <span class="w-5 h-5 rounded mr-2" style="background-color: #00E400"></span>
@@ -205,7 +205,7 @@
                     <span><i class="fas fa-wind mr-2"></i>Wind speed legend</span>
                     <i class="fas fa-chevron-down transform transition-transform" id="windLegendIcon"></i>
                 </button>
-                <div id="windLegendSection" class="px-4 pb-4">
+                <div id="windLegendSection" class="px-4 pb-4 hidden">
                     <div class="space-y-1">
                         <div class="flex items-center">
                             <span class="w-5 h-5 rounded mr-2" style="background-color: #00ff00"></span>

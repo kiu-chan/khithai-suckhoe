@@ -9,7 +9,6 @@ export class MarkerManager {
         this.currentInfoWindow = null;
     }
 
-    // Tạo marker mũi tên gió
     createWindArrow(position, windDirection, windSpeed) {
         if (!windDirection || !windSpeed) return null;
         
@@ -28,7 +27,6 @@ export class MarkerManager {
         });
     }
 
-    // Thêm trạm quan trắc vào bản đồ
     addMonitoringStations(stations) {
         stations.forEach(station => {
             const marker = new google.maps.Marker({
@@ -59,7 +57,6 @@ export class MarkerManager {
         });
     }
 
-    // Thêm nhà máy vào bản đồ 
     addFactories(factories) {
         factories.forEach(factory => {
             const marker = new google.maps.Marker({
@@ -86,7 +83,6 @@ export class MarkerManager {
                 infoWindow: infoWindow
             });
 
-            // Thêm mũi tên gió cho nhà máy nếu có dữ liệu
             if (factory.weather_measurements?.wind_direction) {
                 const windArrow = this.createWindArrow(
                     { 
@@ -107,7 +103,6 @@ export class MarkerManager {
         });
     }
 
-    // Thêm trạm thời tiết và mũi tên gió
     addWeatherStations(weatherStations) {
         weatherStations.forEach(station => {
             if (station.weather_measurements?.wind_direction) {
@@ -134,7 +129,6 @@ export class MarkerManager {
         });
     }
 
-    // Thiết lập sự kiện cho marker
     setupMarkerListeners(marker, infoWindow) {
         marker.addListener('click', () => {
             if (this.currentInfoWindow) {
@@ -145,7 +139,6 @@ export class MarkerManager {
         });
     }
 
-    // Tạo cửa sổ thông tin cho trạm quan trắc
     createStationInfoWindow(station) {
         const content = `
             <div class="info-box">
@@ -157,7 +150,6 @@ export class MarkerManager {
         return new google.maps.InfoWindow({ content });
     }
 
-    // Tạo cửa sổ thông tin cho nhà máy
     createFactoryInfoWindow(factory) {
         const content = `
             <div class="info-box">
@@ -170,7 +162,6 @@ export class MarkerManager {
         return new google.maps.InfoWindow({ content });
     }
 
-    // Tạo nội dung đo đạc cho trạm quan trắc
     createStationMeasurementContent(station) {
         if (!station.measurement_time) {
             return '<div class="mt-3 text-sm text-gray-500">Chưa có dữ liệu đo</div>';
@@ -189,7 +180,6 @@ export class MarkerManager {
         `;
     }
 
-    // Tạo nội dung đo đạc cho nhà máy
     createFactoryMeasurementContent(factory) {
         if (!factory.aqi_time) {
             return '<div class="mt-3 text-sm text-gray-500">Chưa có dữ liệu AQI</div>';
@@ -208,7 +198,6 @@ export class MarkerManager {
         `;
     }
 
-    // Tạo nội dung chi tiết các thông số đo
     createDetailedMeasurements(measurements) {
         if (!measurements) return '';
         
@@ -224,7 +213,6 @@ export class MarkerManager {
         `;
     }
 
-    // Tạo nội dung thông tin thời tiết
     createWeatherContent(data) {
         if (!data.weather_measurements) return '';
 
@@ -242,7 +230,6 @@ export class MarkerManager {
         `;
     }
 
-    // Tạo cửa sổ thông tin cho trạm thời tiết
     createWeatherInfoWindow(station) {
         const content = `
             <div class="info-box">
@@ -263,7 +250,6 @@ export class MarkerManager {
         return new google.maps.InfoWindow({ content });
     }
 
-    // Hiển thị/ẩn markers
     setMarkersVisibility(type, visible) {
         const markers = {
             'monitoring': this.monitoringMarkers,
@@ -278,14 +264,21 @@ export class MarkerManager {
         });
     }
 
-    // Làm mới trạng thái markers
+    clearWindMarkers() {
+        this.windMarkers.forEach(item => {
+            if (item.marker) {
+                item.marker.setMap(null);
+            }
+        });
+        this.windMarkers = [];
+    }
+
     refreshMarkers() {
         this.monitoringMarkers.forEach(item => item.marker.setMap(this.map));
         this.factoryMarkers.forEach(item => item.marker.setMap(this.map));
         this.windMarkers.forEach(item => item.marker.setMap(this.map));
     }
 
-    // Xóa tất cả markers
     clearMarkers() {
         this.monitoringMarkers.forEach(item => {
             if (item.marker) item.marker.setMap(null);

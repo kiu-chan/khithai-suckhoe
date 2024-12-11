@@ -6,6 +6,7 @@ export class MapInteractions {
         this.markerManager = markerManager;
         this.layerManager = layerManager;
         this.currentInfoWindow = null;
+        this.setupTimeControls();
         
         // Khởi tạo các giá trị thang đo AQI
         this.aqiLevels = [
@@ -19,6 +20,142 @@ export class MapInteractions {
         ];
 
         this.setupMapClickHandler();
+    }
+
+
+    setupTimeControls() {
+        const hourButtons = document.querySelectorAll('.hour-button');
+        const dayButtons = document.querySelectorAll('.day-button');
+        const nowButton = document.querySelector('.now-button');
+
+        if (nowButton) {
+            nowButton.addEventListener('click', () => {
+                console.log('Click now button');
+                this.markerManager.clearWindMarkers();
+                this.markerManager.addWeatherStations(window.weatherStations);
+                window.factories.forEach(factory => {
+                    if (factory.weather_measurements?.wind_direction) {
+                        const windArrow = this.markerManager.createWindArrow(
+                            { 
+                                lat: parseFloat(factory.lat), 
+                                lng: parseFloat(factory.lng) 
+                            },
+                            factory.weather_measurements.wind_direction,
+                            factory.weather_measurements.wind_speed
+                        );
+
+                        if (windArrow) {
+                            this.markerManager.windMarkers.push({
+                                code: factory.code,
+                                marker: windArrow
+                            });
+                        }
+                    }
+                });
+            });
+        }
+
+        dayButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const day = e.target.dataset.day;
+                const activeHourButton = document.querySelector('.hour-button.bg-blue-600');
+                const hour = activeHourButton ? activeHourButton.dataset.hour : "00";
+                console.log(`Click day button: ${day}, hour: ${hour}`);
+                await this.updateWindMarkers(day, hour);
+            });
+        });
+
+        hourButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const hour = e.target.dataset.hour;
+                const activeDayButton = document.querySelector('.day-button.bg-blue-600');
+                const day = activeDayButton ? activeDayButton.dataset.day : "0";
+                console.log(`Click hour button: day: ${day}, hour: ${hour}`);
+                await this.updateWindMarkers(day, hour);
+            });
+        });
+    }
+
+    async updateWindMarkers(day, hour) {
+        console.log(`Updating wind markers for day: ${day}, hour: ${hour}`);
+        this.markerManager.clearWindMarkers();
+
+        if (day === "0") {
+            console.log('Current day, showing current data');
+            window.factories.forEach(factory => {
+                if (factory.weather_measurements?.wind_direction) {
+                    const windArrow = this.markerManager.createWindArrow(
+                        { 
+                            lat: parseFloat(factory.lat), 
+                            lng: parseFloat(factory.lng) 
+                        },
+                        factory.weather_measurements.wind_direction,
+                        factory.weather_measurements.wind_speed
+                    );
+
+                    if (windArrow) {
+                        this.markerManager.windMarkers.push({
+                            code: factory.code,
+                            marker: windArrow
+                        });
+                    }
+                }
+            });
+            return;
+        }
+
+        try {
+            const forecastDate = new Date();
+            forecastDate.setDate(forecastDate.getDate() + parseInt(day));
+            forecastDate.setHours(parseInt(hour), 0, 0, 0);
+        
+            // Lấy giờ địa phương, không chuyển sang UTC
+            const year = forecastDate.getFullYear();
+            const month = String(forecastDate.getMonth() + 1).padStart(2, '0');  // Tháng bắt đầu từ 0, cộng thêm 1
+            const dayOfMonth = String(forecastDate.getDate()).padStart(2, '0');
+            const hours = String(forecastDate.getHours()).padStart(2, '0');
+            const minutes = String(forecastDate.getMinutes()).padStart(2, '0');
+            const seconds = String(forecastDate.getSeconds()).padStart(2, '0');
+        
+            // Định dạng theo kiểu yyyy-MM-dd HH:mm:ss
+            const formattedTime = `${year}-${month}-${dayOfMonth} ${hours}:${minutes}:${seconds}`;
+        
+            console.log(`/api/weather-forecast?forecast_time=${encodeURIComponent(formattedTime)}`);
+            const response = await fetch(`/api/weather-forecast?forecast_time=${encodeURIComponent(formattedTime)}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        
+            const forecastData = await response.json();
+            console.log('Forecast data:', forecastData);
+        
+            forecastData.forEach(forecast => {
+                const factory = window.factories.find(f => f.code === forecast.factory_id);
+                if (factory) {
+                    console.log(`Creating wind arrow for factory: ${factory.code}`);
+                    const windArrow = this.markerManager.createWindArrow(
+                        { 
+                            lat: parseFloat(factory.lat), 
+                            lng: parseFloat(factory.lng) 
+                        },
+                        forecast.wind_deg,
+                        forecast.wind_speed
+                    );
+        
+                    if (windArrow) {
+                        windArrow.setMap(this.map); // Đảm bảo marker được gắn vào map
+                        this.markerManager.windMarkers.push({
+                            code: factory.code,
+                            marker: windArrow
+                        });
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Lỗi khi cập nhật mũi tên gió:', error);
+        }
+        
     }
 
     setupMapClickHandler() {

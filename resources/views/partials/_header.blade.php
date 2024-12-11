@@ -8,8 +8,8 @@
         <div class="absolute inset-0 flex items-center">
             <div class="container mx-auto px-4 sm:px-12">
                 <h1 class="banner-text text-[#1a4c8c] font-bold">
-                    <div class="text-2xl sm:text-4xl leading-tight">Public health and Air environment</div>
-                    <div class="text-3xl sm:text-5xl leading-tight">Monitoring system</div>
+                    <div class="text-2xl sm:text-4xl leading-tight">Air environment monitoring system of </div>
+                    <div class="text-3xl sm:text-5xl leading-tight">Cement factories</div>
                 </h1>
             </div>
         </div>

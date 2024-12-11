@@ -253,43 +253,47 @@
 <div class="flex-1 relative">
     <div id="map" class="w-full h-full"></div>
 
-    <!-- Time Control - Đặt trong map container với position absolute -->
-    <div class="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 w-[600px]">
-        <div class="flex items-center justify-between space-x-4">
-            <!-- Nút Now và các nút chọn ngày -->
-            <div class="flex space-x-1">
+<!-- Time Control -->
+<div class="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 w-[600px]">
+    <div class="flex items-center justify-between space-x-4">
+        <div class="flex space-x-1">
+            <button 
+                class="now-button px-3 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600"
+                data-mode="current"
+            >
+                Now
+            </button>
+            @php
+                $currentDate = now();
+            @endphp
+            @for($i = 0; $i < 6; $i++)
+                @php
+                    $date = $currentDate->copy()->addDays($i);
+                @endphp
                 <button 
-                    class="now-button px-3 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600"
-                    data-mode="current"
+                    class="day-button px-3 py-1 text-sm rounded {{ $i === 5 ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300' }}"
+                    data-day="{{ $i }}"
                 >
-                    Now
+                    {{ $date->format('d/m') }}
                 </button>
-                @for($i = 1; $i <= 6; $i++)
-                    <button 
-                        class="day-button px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300"
-                        data-day="{{ $i-1 }}"
-                    >
-                        T{{ $i }}
-                    </button>
-                @endfor
-            </div>
-            
-            <!-- Hiển thị ngày hiện tại -->
-            <div class="current-date text-sm font-medium"></div>
+            @endfor
         </div>
         
-        <!-- Nút chọn giờ -->
-        <div class="mt-3 flex items-center justify-between space-x-1">
-            @foreach([0, 3, 6, 9, 12, 15, 18, 21] as $hour)
-                <button 
-                    class="hour-button px-2 py-1 text-xs rounded bg-gray-200 hover:bg-gray-300"
-                    data-hour="{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}"
-                >
-                    {{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00
-                </button>
-            @endforeach
-        </div>
+        <div class="current-date text-sm font-medium">16/12/2024</div>
     </div>
+    
+    <!-- Nút chọn giờ -->
+    <div class="mt-3 flex items-center justify-between space-x-1">
+        @foreach([0, 3, 6, 9, 12, 15, 18, 21] as $hour)
+            <button 
+                class="hour-button px-2 py-1 text-xs rounded bg-gray-200 hover:bg-gray-300"
+                data-hour="{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}"
+            >
+                {{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00
+            </button>
+        @endforeach
+    </div>
+</div>
 </div>
 
 <script>

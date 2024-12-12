@@ -195,6 +195,7 @@ export class LayerManager {
     }
 
     updateForecastLayers(day, hour) {
+        console.log('Updating forecast layers:', day, hour);
         this.currentMode = 'forecast';
         this.currentForecastDay = day;
         this.currentForecastHour = hour;
@@ -210,7 +211,7 @@ export class LayerManager {
         this.map.overlayMapTypes.push(this.wmsLayer);  // Layer AQI chung
 
         // Thêm các layer dự báo của nhà máy
-        if (day !== "0") { // Nếu không phải ngày hiện tại
+        // if (day !== "0") { // Nếu không phải ngày hiện tại
             this.factoryLayers.forEach(factory => {
                 const forecastLayer = new google.maps.ImageMapType({
                     getTileUrl: (coord, zoom) => this.getForecastWMSTileUrl(
@@ -223,13 +224,13 @@ export class LayerManager {
                 });
                 this.map.overlayMapTypes.push(forecastLayer);
             });
-        } else { // Nếu là ngày hiện tại, sử dụng layer thường
-            this.map.overlayMapTypes.push(this.laHienLayer);
-            this.map.overlayMapTypes.push(this.caoNganLayer);
-            this.map.overlayMapTypes.push(this.quangSonLayer);
-            this.map.overlayMapTypes.push(this.quanTrieuLayer); 
-            this.map.overlayMapTypes.push(this.luuXaLayer);
-        }
+        // } else { // Nếu là ngày hiện tại, sử dụng layer thường
+        //     this.map.overlayMapTypes.push(this.laHienLayer);
+        //     this.map.overlayMapTypes.push(this.caoNganLayer);
+        //     this.map.overlayMapTypes.push(this.quangSonLayer);
+        //     this.map.overlayMapTypes.push(this.quanTrieuLayer); 
+        //     this.map.overlayMapTypes.push(this.luuXaLayer);
+        // }
     }
 
     refreshWMSLayers() {

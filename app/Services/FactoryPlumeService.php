@@ -33,13 +33,6 @@ class FactoryPlumeService
                 'stack_temp' => 180,        // Nhiệt độ khí thải (°C)
                 'stack_velocity' => 25,     // Vận tốc khí thải (m/s)
             ],
-            'cao_ngan' => [
-                'code' => 'KLV.03',
-                'stack_height' => 145,
-                'stack_diameter' => 7.5,
-                'stack_temp' => 175,
-                'stack_velocity' => 23,
-            ],
             'quan_trieu' => [
                 'code' => 'KLV.04',
                 'stack_height' => 140,
@@ -55,12 +48,19 @@ class FactoryPlumeService
                 'stack_velocity' => 20,
             ],
             'quang_son' => [
-                'code' => 'KLV.01',
+                'code' => 'KLV.03',
                 'stack_height' => 142,
                 'stack_diameter' => 7.2,
                 'stack_temp' => 172,
                 'stack_velocity' => 23,
-            ]
+            ],
+            'cao_ngan' => [
+                'code' => 'KLV.01',
+                'stack_height' => 145,
+                'stack_diameter' => 7.5,
+                'stack_temp' => 175,
+                'stack_velocity' => 23,
+            ],
         ];
     }
 

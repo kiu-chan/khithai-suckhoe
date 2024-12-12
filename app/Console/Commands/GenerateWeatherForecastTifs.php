@@ -12,41 +12,41 @@ class GenerateWeatherForecastTifs extends Command
     protected $description = 'Generate TIF files for weather forecasts';
 
     private $factoryParams = [
-        'KLV.01' => [  // Lưu Xá
+        'KLV.05' => [  // Lưu Xá
             'name' => 'luu_xa',
             'stack_height' => 120,
             'stack_diameter' => 3.0,
             'stack_velocity' => 18,
             'emission_rate' => 55
         ],
-        'KLV.02' => [  // Quán Triều
+        'KLV.04' => [  // Quán Triều
             'name' => 'quan_trieu',
             'stack_height' => 110,
             'stack_diameter' => 2.8,
             'stack_velocity' => 17,
             'emission_rate' => 52
         ],
-        'KLV.03' => [  // Cao Ngạn
-            'name' => 'cao_ngan',
-            'stack_height' => 130,
-            'stack_diameter' => 3.2,
-            'stack_velocity' => 19,
-            'emission_rate' => 58
-        ],
-        'KLV.04' => [  // Quang Sơn
+        'KLV.03' => [  // Quang Sơn
             'name' => 'quang_son',
             'stack_height' => 115,
             'stack_diameter' => 2.9,
             'stack_velocity' => 16,
             'emission_rate' => 53
         ],
-        'KLV.05' => [  // La Hiên
+        'KLV.02' => [  // La Hiên
             'name' => 'la_hien',
             'stack_height' => 125,
             'stack_diameter' => 3.1,
             'stack_velocity' => 18,
             'emission_rate' => 54
-        ]
+        ],
+        'KLV.01' => [  // Cao Ngạn
+            'name' => 'cao_ngan',
+            'stack_height' => 130,
+            'stack_diameter' => 3.2,
+            'stack_velocity' => 19,
+            'emission_rate' => 58
+        ],
     ];
 
     private $modelParams = [

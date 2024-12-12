@@ -286,42 +286,40 @@
 </div>
 </div>
 <!-- Time Control -->
-<div class="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 w-[600px]">
-    <div class="flex items-center justify-between space-x-4">
-        <div class="flex space-x-1">
+<div class="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 max-w-[800px] overflow-x-auto">
+    <div class="flex items-center space-x-2">
+        @php
+            $currentTime = now();
+            $timeSlots = [];
+            
+            // Điều chỉnh về mốc giờ gần nhất (0,3,6,9,12,15,18,21)
+            $currentHour = $currentTime->hour;
+            $nearestSlot = floor($currentHour / 3) * 3;
+            $currentTime = $currentTime->setHour($nearestSlot)->startOfHour();
+            
+            // Tạo 24 mốc thời gian, mỗi mốc cách nhau 3 giờ
+            for ($i = 0; $i < 24; $i++) {
+                $timePoint = $currentTime->copy()->addHours($i * 3);
+                $isNow = $i === 0;
+                
+                // Chỉ lấy các mốc 0,3,6,9,12,15,18,21
+                if ($timePoint->hour % 3 === 0) {
+                    $timeSlots[] = [
+                        'datetime' => $timePoint->format('Y-m-d H:i'),
+                        'display' => $isNow ? 'Now' : $timePoint->format('H\h d/m'),
+                        'isNow' => $isNow
+                    ];
+                }
+            }
+        @endphp
+
+        @foreach($timeSlots as $slot)
             <button 
-                class="now-button px-3 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600"
-                data-mode="current"
+                class="time-slot-button whitespace-nowrap px-3 py-1 text-sm rounded 
+                       {{ $slot['isNow'] ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300' }}"
+                data-datetime="{{ $slot['datetime'] }}"
             >
-                Now
-            </button>
-            @php
-                $currentDate = now();
-            @endphp
-            @for($i = 0; $i < 6; $i++)
-                @php
-                    $date = $currentDate->copy()->addDays($i);
-                @endphp
-                <button 
-                    class="day-button px-3 py-1 text-sm rounded {{ $i === 5 ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300' }}"
-                    data-day="{{ $i }}"
-                >
-                    {{ $date->format('d/m') }}
-                </button>
-            @endfor
-        </div>
-        
-        <div class="current-date text-sm font-medium">16/12/2024</div>
-    </div>
-    
-    <!-- Nút chọn giờ -->
-    <div class="mt-3 flex items-center justify-between space-x-1">
-        @foreach([0, 3, 6, 9, 12, 15, 18, 21] as $hour)
-            <button 
-                class="hour-button px-2 py-1 text-xs rounded bg-gray-200 hover:bg-gray-300"
-                data-hour="{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}"
-            >
-                {{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00
+                {{ $slot['display'] }}
             </button>
         @endforeach
     </div>

@@ -23,51 +23,48 @@ export class MapInteractions {
     }
 
     setupTimeControls() {
-        const hourButtons = document.querySelectorAll('.hour-button');
-        const dayButtons = document.querySelectorAll('.day-button');
-        const nowButton = document.querySelector('.now-button');
-
-        if (nowButton) {
-            nowButton.addEventListener('click', () => {
-                this.markerManager.clearWindMarkers();
-                this.markerManager.addWeatherStations(window.weatherStations);
-                window.factories.forEach(factory => {
-                    if (factory.weather_measurements?.wind_direction) {
-                        const windArrow = this.markerManager.createWindArrow(
-                            { 
-                                lat: parseFloat(factory.lat), 
-                                lng: parseFloat(factory.lng) 
-                            },
-                            factory.weather_measurements.wind_direction,
-                            factory.weather_measurements.wind_speed
-                        );
-
-                        if (windArrow) {
-                            this.markerManager.windMarkers.push({
-                                code: factory.code,
-                                marker: windArrow
-                            });
-                        }
-                    }
+        // Lấy tất cả các nút thời gian
+        const timeSlotButtons = document.querySelectorAll('.time-slot-button');
+        
+        // Xử lý click cho từng nút
+        timeSlotButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                // Bỏ highlighting của tất cả các nút
+                timeSlotButtons.forEach(btn => {
+                    btn.classList.remove('bg-green-500', 'bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-200');
                 });
-            });
-        }
-
-        dayButtons.forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const day = e.target.dataset.day;
-                const activeHourButton = document.querySelector('.hour-button.bg-blue-600');
-                const hour = activeHourButton ? activeHourButton.dataset.hour : "00";
-                await this.updateWindMarkers(day, hour);
-            });
-        });
-
-        hourButtons.forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const hour = e.target.dataset.hour;
-                const activeDayButton = document.querySelector('.day-button.bg-blue-600');
-                const day = activeDayButton ? activeDayButton.dataset.day : "0";
-                await this.updateWindMarkers(day, hour);
+                
+                // Highlight nút được chọn
+                e.target.classList.remove('bg-gray-200');
+                
+                // Nếu là nút "Now"
+                if (e.target.textContent.trim() === 'Now') {
+                    e.target.classList.add('bg-green-500', 'text-white');
+                    // Hiển thị dữ liệu hiện tại
+                    this.layerManager.showCurrentLayers();
+                    // Cập nhật wind markers cho thời điểm hiện tại
+                    await this.updateWindMarkers("0", "00");
+                } else {
+                    e.target.classList.add('bg-blue-600', 'text-white');
+                    
+                    // Lấy thời gian từ data-datetime
+                    const datetime = e.target.dataset.datetime;
+                    const selectedDate = new Date(datetime);
+                    
+                    // Tính toán số ngày chênh lệch so với hiện tại
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    selectedDate.setHours(0, 0, 0, 0);
+                    const dayDiff = Math.round((selectedDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    // Lấy giờ từ datetime
+                    const hour = new Date(datetime).getHours().toString().padStart(2, '0');
+                    
+                    // Cập nhật layers và wind markers
+                    this.layerManager.updateForecastLayers(dayDiff.toString(), hour);
+                    await this.updateWindMarkers(dayDiff.toString(), hour);
+                }
             });
         });
     }
@@ -277,6 +274,7 @@ export class MapInteractions {
             const seconds = String(forecastDate.getSeconds()).padStart(2, '0');
         
             const formattedTime = `${year}-${month}-${dayOfMonth} ${hours}:${minutes}:${seconds}`;
+            console.log(formattedTime);
             const response = await fetch(`/api/weather-forecast?forecast_time=${encodeURIComponent(formattedTime)}`);
             
             if (!response.ok) {

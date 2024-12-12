@@ -9,6 +9,7 @@ export class LayerManager {
         this.luuXaLayer = null;
         this.districtBoundaryLayer = null;
         this.communeBoundaryLayer = null;
+        this.populationLayer = null;
         this.thaiNguyenPolygons = [];
         this.currentMode = 'current';
         this.currentForecastDay = 0;
@@ -31,6 +32,14 @@ export class LayerManager {
             isPng: true,
             opacity: 0.7,
             name: 'communeWMS'
+        });
+
+        this.populationLayer = new google.maps.ImageMapType({
+            getTileUrl: (coord, zoom) => this.getWMSTileUrl(coord, zoom, 'dan_cu'),
+            tileSize: new google.maps.Size(256, 256),
+            isPng: true,
+            opacity: 0.7,
+            name: 'populationWMS'
         });
 
         this.wmsLayer = new google.maps.ImageMapType({
@@ -176,6 +185,7 @@ export class LayerManager {
 
         this.map.overlayMapTypes.push(this.districtBoundaryLayer);
         this.map.overlayMapTypes.push(this.communeBoundaryLayer);
+        this.map.overlayMapTypes.push(this.populationLayer);
         this.map.overlayMapTypes.push(this.wmsLayer);
         this.map.overlayMapTypes.push(this.laHienLayer);
         this.map.overlayMapTypes.push(this.caoNganLayer);

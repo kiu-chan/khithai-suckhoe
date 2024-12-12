@@ -50,6 +50,10 @@
                         <span>Factory impact</span>
                     </label>
                     <label class="flex items-center space-x-2">
+                        <input type="checkbox" checked class="form-checkbox text-blue-600" id="populationLayer">
+                        <span>Population map</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
                         <input type="checkbox" checked class="form-checkbox text-blue-600" id="thaiNguyenLayer">
                         <span>Thai Nguyen boundary</span>
                     </label>
@@ -252,7 +256,20 @@
 <!-- Map Container -->
 <div class="flex-1 relative">
     <div id="map" class="w-full h-full"></div>
-
+    <div class="absolute top-4 right-4 z-50 flex flex-col items-end space-y-2">
+    <button id="getCurrentLocation" class="bg-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-100 transition-colors duration-200">
+        <i class="fas fa-location-arrow mr-2"></i>
+        Vị trí của tôi
+    </button>
+    <div id="coordinates" class="bg-white px-4 py-2 rounded-lg shadow-lg hidden">
+        <div class="text-sm">
+            <span class="font-medium">Vĩ độ:</span> <span id="latitude"></span>
+        </div>
+        <div class="text-sm">
+            <span class="font-medium">Kinh độ:</span> <span id="longitude"></span>
+        </div>
+    </div>
+</div>
 <!-- Time Control -->
 <div class="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 w-[600px]">
     <div class="flex items-center justify-between space-x-4">

@@ -6,6 +6,8 @@ export class MapInteractions {
         this.markerManager = markerManager;
         this.layerManager = layerManager;
         this.currentInfoWindow = null;
+        this.currentLocationMarker = null;
+        this.setupLocationControl();
         this.setupTimeControls();
         
         // Khởi tạo các giá trị thang đo AQI
@@ -22,6 +24,69 @@ export class MapInteractions {
         this.setupMapClickHandler();
     }
 
+    setupLocationControl() {
+        const locationButton = document.getElementById('getCurrentLocation');
+        const coordinatesDiv = document.getElementById('coordinates');
+        const latitudeSpan = document.getElementById('latitude');
+        const longitudeSpan = document.getElementById('longitude');
+    
+        if (locationButton) {
+            locationButton.addEventListener('click', () => {
+                if (navigator.geolocation) {
+                    locationButton.disabled = true;
+                    locationButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang tìm...';
+    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+    
+                            // Hiển thị tọa độ
+                            latitudeSpan.textContent = pos.lat.toFixed(6);
+                            longitudeSpan.textContent = pos.lng.toFixed(6);
+                            coordinatesDiv.classList.remove('hidden');
+    
+                            // Di chuyển map đến vị trí hiện tại
+                            this.map.setCenter(pos);
+                            this.map.setZoom(15);
+    
+                            // Đặt marker tại vị trí hiện tại
+                            if (this.currentLocationMarker) {
+                                this.currentLocationMarker.setMap(null);
+                            }
+                            this.currentLocationMarker = new google.maps.Marker({
+                                position: pos,
+                                map: this.map,
+                                title: 'Vị trí của bạn',
+                                icon: {
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    fillColor: '#4285F4',
+                                    fillOpacity: 1,
+                                    strokeColor: '#ffffff',
+                                    strokeWeight: 2,
+                                    scale: 8
+                                }
+                            });
+    
+                            // Reset button
+                            locationButton.disabled = false;
+                            locationButton.innerHTML = '<i class="fas fa-location-arrow mr-2"></i>Vị trí của tôi';
+                        },
+                        (error) => {
+                            console.error('Lỗi khi lấy vị trí:', error);
+                            alert('Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập vị trí.');
+                            locationButton.disabled = false;
+                            locationButton.innerHTML = '<i class="fas fa-location-arrow mr-2"></i>Vị trí của tôi';
+                        }
+                    );
+                } else {
+                    alert('Trình duyệt của bạn không hỗ trợ định vị.');
+                }
+            });
+        }
+    }
 
     setupTimeControls() {
         const hourButtons = document.querySelectorAll('.hour-button');

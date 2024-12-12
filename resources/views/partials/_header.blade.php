@@ -23,6 +23,10 @@
                 Air Quality Monitoring System
             </h2>
             <nav class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-6 items-center">
+                <a href="{{ route('health.index') }}" 
+                   class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('health.index') ? 'border-white' : 'border-transparent' }}">
+                    Home
+                </a>
                 <a href="{{ route('map.index') }}" 
                    class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('map.index') ? 'border-white' : 'border-transparent' }}">
                     GIS Map
@@ -31,10 +35,10 @@
                    class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('monitoring.index') ? 'border-white' : 'border-transparent' }}">
                     Real Time Monitoring
                 </a>
-                <a href="{{ route('health.index') }}" 
-                   class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('health.index') ? 'border-white' : 'border-transparent' }}">
-                    Health Information
-                </a>
+                    <a href="{{ route('medical-records.index') }}" 
+                    class="hover:text-gray-200 pb-1 border-b-2 {{ request()->routeIs('medical-records.index') ? 'border-white' : 'border-transparent' }}">
+                        Medical Records
+                    </a>
             </nav>
         </div>
     </div>

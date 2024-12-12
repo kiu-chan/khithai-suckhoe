@@ -261,6 +261,10 @@
         <i class="fas fa-location-arrow mr-2"></i>
         My location
     </button>
+    <button id="getThaiNguyenLocation" class="bg-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-100 transition-colors duration-200">
+        <i class="fas fa-map-marker-alt mr-2"></i>
+        Thai Nguyen
+    </button>
     <div id="coordinates" class="bg-white px-4 py-2 rounded-lg shadow-lg hidden">
     <!-- Thêm nút đóng -->
     <div class="flex justify-between items-center mb-2">

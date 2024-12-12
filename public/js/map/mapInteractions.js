@@ -191,7 +191,7 @@ export class MapInteractions {
         try {
             const apiKey = '9c1ee915-0f53-4dd1-a1d8-17843b884cf0';
             const response = await fetch(
-                `http://api.airvisual.com/v2/nearest_city?lat=${lat}&lon=${lng}&key=${apiKey}`
+                `https://api.airvisual.com/v2/nearest_city?lat=${lat}&lon=${lng}&key=${apiKey}`
             );
             
             if (!response.ok) {

@@ -259,16 +259,27 @@
     <div class="absolute top-4 right-4 z-50 flex flex-col items-end space-y-2">
     <button id="getCurrentLocation" class="bg-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-100 transition-colors duration-200">
         <i class="fas fa-location-arrow mr-2"></i>
-        Vị trí của tôi
+        My location
     </button>
     <div id="coordinates" class="bg-white px-4 py-2 rounded-lg shadow-lg hidden">
-        <div class="text-sm">
-            <span class="font-medium">Vĩ độ:</span> <span id="latitude"></span>
-        </div>
-        <div class="text-sm">
-            <span class="font-medium">Kinh độ:</span> <span id="longitude"></span>
-        </div>
+    <!-- Thêm nút đóng -->
+    <div class="flex justify-between items-center mb-2">
+        <span class="font-medium">Location information</span>
+        <button id="closeCoordinates" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
+    <div class="text-sm">
+        <span class="font-medium">Latitude:</span> <span id="latitude"></span>
+    </div>
+    <div class="text-sm">
+        <span class="font-medium">Longitude:</span> <span id="longitude"></span>
+    </div>
+    <div class="text-sm mt-2 border-t pt-2">
+        <span class="font-medium">Air quality:</span>
+        <div id="aqi-value" class="mt-1"></div>
+    </div>
+</div>
 </div>
 <!-- Time Control -->
 <div class="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 w-[600px]">

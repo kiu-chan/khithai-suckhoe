@@ -1,5 +1,3 @@
-// mapInteractions.js
-
 export class MapInteractions {
     constructor(map, markerManager, layerManager) {
         this.map = map;
@@ -7,8 +5,6 @@ export class MapInteractions {
         this.layerManager = layerManager;
         this.currentInfoWindow = null;
         this.currentLocationMarker = null;
-        this.setupLocationControl();
-        this.setupTimeControls();
         
         // Khởi tạo các giá trị thang đo AQI
         this.aqiLevels = [
@@ -21,71 +17,9 @@ export class MapInteractions {
             { gray: 300, aqi: 300, color: '#7e0023', label: 'Hazardous', opacity: 1 }
         ];
 
+        this.setupTimeControls();
         this.setupMapClickHandler();
-    }
-
-    setupLocationControl() {
-        const locationButton = document.getElementById('getCurrentLocation');
-        const coordinatesDiv = document.getElementById('coordinates');
-        const latitudeSpan = document.getElementById('latitude');
-        const longitudeSpan = document.getElementById('longitude');
-    
-        if (locationButton) {
-            locationButton.addEventListener('click', () => {
-                if (navigator.geolocation) {
-                    locationButton.disabled = true;
-                    locationButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang tìm...';
-    
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const pos = {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            };
-    
-                            // Hiển thị tọa độ
-                            latitudeSpan.textContent = pos.lat.toFixed(6);
-                            longitudeSpan.textContent = pos.lng.toFixed(6);
-                            coordinatesDiv.classList.remove('hidden');
-    
-                            // Di chuyển map đến vị trí hiện tại
-                            this.map.setCenter(pos);
-                            this.map.setZoom(15);
-    
-                            // Đặt marker tại vị trí hiện tại
-                            if (this.currentLocationMarker) {
-                                this.currentLocationMarker.setMap(null);
-                            }
-                            this.currentLocationMarker = new google.maps.Marker({
-                                position: pos,
-                                map: this.map,
-                                title: 'Vị trí của bạn',
-                                icon: {
-                                    path: google.maps.SymbolPath.CIRCLE,
-                                    fillColor: '#4285F4',
-                                    fillOpacity: 1,
-                                    strokeColor: '#ffffff',
-                                    strokeWeight: 2,
-                                    scale: 8
-                                }
-                            });
-    
-                            // Reset button
-                            locationButton.disabled = false;
-                            locationButton.innerHTML = '<i class="fas fa-location-arrow mr-2"></i>Vị trí của tôi';
-                        },
-                        (error) => {
-                            console.error('Lỗi khi lấy vị trí:', error);
-                            alert('Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập vị trí.');
-                            locationButton.disabled = false;
-                            locationButton.innerHTML = '<i class="fas fa-location-arrow mr-2"></i>Vị trí của tôi';
-                        }
-                    );
-                } else {
-                    alert('Trình duyệt của bạn không hỗ trợ định vị.');
-                }
-            });
-        }
+        this.setupLocationControl();
     }
 
     setupTimeControls() {
@@ -95,7 +29,6 @@ export class MapInteractions {
 
         if (nowButton) {
             nowButton.addEventListener('click', () => {
-                console.log('Click now button');
                 this.markerManager.clearWindMarkers();
                 this.markerManager.addWeatherStations(window.weatherStations);
                 window.factories.forEach(factory => {
@@ -125,7 +58,6 @@ export class MapInteractions {
                 const day = e.target.dataset.day;
                 const activeHourButton = document.querySelector('.hour-button.bg-blue-600');
                 const hour = activeHourButton ? activeHourButton.dataset.hour : "00";
-                console.log(`Click day button: ${day}, hour: ${hour}`);
                 await this.updateWindMarkers(day, hour);
             });
         });
@@ -135,18 +67,181 @@ export class MapInteractions {
                 const hour = e.target.dataset.hour;
                 const activeDayButton = document.querySelector('.day-button.bg-blue-600');
                 const day = activeDayButton ? activeDayButton.dataset.day : "0";
-                console.log(`Click hour button: day: ${day}, hour: ${hour}`);
                 await this.updateWindMarkers(day, hour);
             });
         });
     }
 
+    setupLocationControl() {
+        const locationButton = document.getElementById('getCurrentLocation');
+        const coordinatesDiv = document.getElementById('coordinates');
+        const latitudeSpan = document.getElementById('latitude');
+        const longitudeSpan = document.getElementById('longitude');
+        const closeButton = document.getElementById('closeCoordinates');
+
+        // Thêm xử lý sự kiện cho nút đóng
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                coordinatesDiv.classList.add('hidden');
+                if (this.currentLocationMarker) {
+                    this.currentLocationMarker = null;
+                }
+            });
+        }
+        if (locationButton) {
+            locationButton.addEventListener('click', async () => {
+                if (navigator.geolocation) {
+                    locationButton.disabled = true;
+                    locationButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Searching...';
+
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            const pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+
+                            // Hiển thị tọa độ
+                            latitudeSpan.textContent = pos.lat.toFixed(6);
+                            longitudeSpan.textContent = pos.lng.toFixed(6);
+                            coordinatesDiv.classList.remove('hidden');
+
+                            // Lấy và hiển thị AQI
+                            const aqiData = await this.checkAQIAtLocation(pos.lat, pos.lng);
+                            this.updateAQIDisplay(aqiData);
+
+                            // Di chuyển map đến vị trí hiện tại
+                            this.map.setCenter(pos);
+                            this.map.setZoom(15);
+
+                            // Đặt marker tại vị trí hiện tại
+                            if (this.currentLocationMarker) {
+                                this.currentLocationMarker.setMap(null);
+                            }
+                            this.currentLocationMarker = new google.maps.Marker({
+                                position: pos,
+                                map: this.map,
+                                title: 'Your location',
+                                icon: {
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    fillColor: '#4285F4',
+                                    fillOpacity: 1,
+                                    strokeColor: '#ffffff',
+                                    strokeWeight: 2,
+                                    scale: 8
+                                }
+                            });
+
+                            // Reset button
+                            locationButton.disabled = false;
+                            locationButton.innerHTML = '<i class="fas fa-location-arrow mr-2"></i>My location';
+                        },
+                        (error) => {
+                            console.error('Error getting location:', error);
+                            alert('Unable to get your location. Please check location access permissions.');
+                            locationButton.disabled = false;
+                            locationButton.innerHTML = '<i class="fas fa-location-arrow mr-2"></i>My location';
+                        }
+                    );
+                } else {
+                    alert('Your browser does not support geolocation.');
+                }
+            });
+        }
+    }
+
+    async checkAQIAtLocation(lat, lng) {
+        const isInThaiNguyen = await this.isPointInThaiNguyen(lat, lng);
+        
+        if (isInThaiNguyen) {
+            return await this.getInterpolatedAQI(lat, lng);
+        } else {
+            return await this.getIQAirAQI(lat, lng);
+        }
+    }
+
+    async isPointInThaiNguyen(lat, lng) {
+        const point = new google.maps.LatLng(lat, lng);
+        for (const area of this.layerManager.thaiNguyenPolygons) {
+            if (google.maps.geometry.poly.containsLocation(point, area.polygon)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    async getInterpolatedAQI(lat, lng) {
+        try {
+            const aqiData = await this.getAQIData(lat, lng);
+            if (aqiData) {
+                return {
+                    aqi: aqiData.aqi,
+                    source: 'interpolated',
+                    message: this.getAQIInfo(aqiData.aqi)
+                };
+            }
+            return null;
+        } catch (error) {
+            console.error('Error getting interpolated AQI data:', error);
+            return null;
+        }
+    }
+
+    async getIQAirAQI(lat, lng) {
+        try {
+            const apiKey = '9c1ee915-0f53-4dd1-a1d8-17843b884cf0';
+            const response = await fetch(
+                `http://api.airvisual.com/v2/nearest_city?lat=${lat}&lon=${lng}&key=${apiKey}`
+            );
+            
+            if (!response.ok) {
+                throw new Error('Cannot get data from IQAir');
+            }
+            
+            const data = await response.json();
+            return {
+                aqi: data.data.current.pollution.aqius,
+                source: 'iqair',
+                message: this.getAQIInfo(data.data.current.pollution.aqius)
+            };
+        } catch (error) {
+            console.error('Error getting data from IQAir:', error);
+            return null;
+        }
+    }
+
+    updateAQIDisplay(aqiData) {
+        const aqiValueDiv = document.getElementById('aqi-value');
+        if (!aqiValueDiv) return;
+
+        if (!aqiData) {
+            aqiValueDiv.innerHTML = '<span class="text-red-500">No data</span>';
+            return;
+        }
+
+        const aqiInfo = aqiData.message;
+        aqiValueDiv.innerHTML = `
+            <div class="p-2 rounded" style="background-color: ${aqiInfo.color}15">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${aqiInfo.color}"></div>
+                    <div class="font-medium" style="color: ${aqiInfo.color}">
+                        AQI: ${aqiData.aqi} - ${aqiInfo.status}
+                    </div>
+                </div>
+                <div class="text-xs mt-1">
+                    ${aqiInfo.message}
+                </div>
+                <div class="text-xs mt-1 text-gray-500">
+                    Source: ${aqiData.source === 'interpolated' ? 'Thai Nguyen Interpolation' : 'IQAir'}
+                </div>
+            </div>
+        `;
+    }
+
     async updateWindMarkers(day, hour) {
-        console.log(`Updating wind markers for day: ${day}, hour: ${hour}`);
         this.markerManager.clearWindMarkers();
 
         if (day === "0") {
-            console.log('Current day, showing current data');
             window.factories.forEach(factory => {
                 if (factory.weather_measurements?.wind_direction) {
                     const windArrow = this.markerManager.createWindArrow(
@@ -174,18 +269,14 @@ export class MapInteractions {
             forecastDate.setDate(forecastDate.getDate() + parseInt(day));
             forecastDate.setHours(parseInt(hour), 0, 0, 0);
         
-            // Lấy giờ địa phương, không chuyển sang UTC
             const year = forecastDate.getFullYear();
-            const month = String(forecastDate.getMonth() + 1).padStart(2, '0');  // Tháng bắt đầu từ 0, cộng thêm 1
+            const month = String(forecastDate.getMonth() + 1).padStart(2, '0');
             const dayOfMonth = String(forecastDate.getDate()).padStart(2, '0');
             const hours = String(forecastDate.getHours()).padStart(2, '0');
             const minutes = String(forecastDate.getMinutes()).padStart(2, '0');
             const seconds = String(forecastDate.getSeconds()).padStart(2, '0');
         
-            // Định dạng theo kiểu yyyy-MM-dd HH:mm:ss
             const formattedTime = `${year}-${month}-${dayOfMonth} ${hours}:${minutes}:${seconds}`;
-        
-            console.log(`/api/weather-forecast?forecast_time=${encodeURIComponent(formattedTime)}`);
             const response = await fetch(`/api/weather-forecast?forecast_time=${encodeURIComponent(formattedTime)}`);
             
             if (!response.ok) {
@@ -193,12 +284,10 @@ export class MapInteractions {
             }
         
             const forecastData = await response.json();
-            console.log('Forecast data:', forecastData);
         
             forecastData.forEach(forecast => {
                 const factory = window.factories.find(f => f.code === forecast.factory_id);
                 if (factory) {
-                    console.log(`Creating wind arrow for factory: ${factory.code}`);
                     const windArrow = this.markerManager.createWindArrow(
                         { 
                             lat: parseFloat(factory.lat), 
@@ -209,7 +298,7 @@ export class MapInteractions {
                     );
         
                     if (windArrow) {
-                        windArrow.setMap(this.map); // Đảm bảo marker được gắn vào map
+                        windArrow.setMap(this.map);
                         this.markerManager.windMarkers.push({
                             code: factory.code,
                             marker: windArrow
@@ -218,9 +307,8 @@ export class MapInteractions {
                 }
             });
         } catch (error) {
-            console.error('Lỗi khi cập nhật mũi tên gió:', error);
+            console.error('Error updating wind arrows:', error);
         }
-        
     }
 
     setupMapClickHandler() {
@@ -288,18 +376,14 @@ export class MapInteractions {
                `Y=128&` +
                `FEATURE_COUNT=1`;
     }
-
     calculateAQI(grayValue) {
-        // Kiểm tra giá trị null hoặc undefined
         if (grayValue == null) return 0;
-
-        // Tìm khoảng giá trị phù hợp để nội suy
+ 
         for (let i = 0; i < this.aqiLevels.length - 1; i++) {
             const currentLevel = this.aqiLevels[i];
             const nextLevel = this.aqiLevels[i + 1];
             
             if (grayValue >= currentLevel.gray && grayValue <= nextLevel.gray) {
-                // Sử dụng nội suy tuyến tính
                 return Math.round(
                     currentLevel.aqi +
                     (grayValue - currentLevel.gray) *
@@ -308,17 +392,15 @@ export class MapInteractions {
                 );
             }
         }
-
-        // Xử lý giá trị ngoài thang đo
+ 
         if (grayValue > this.aqiLevels[this.aqiLevels.length - 1].gray) {
             return this.aqiLevels[this.aqiLevels.length - 1].aqi;
         }
-
+ 
         return 0;
     }
-
+ 
     getAQIInfo(aqi) {
-        // Tìm level phù hợp với giá trị AQI
         for (let i = 0; i < this.aqiLevels.length - 1; i++) {
             const currentLevel = this.aqiLevels[i];
             const nextLevel = this.aqiLevels[i + 1];
@@ -332,7 +414,7 @@ export class MapInteractions {
                     'Very Unhealthy': 'Health alert: The risk of health effects is increased for everyone.',
                     'Hazardous': 'Health warning of emergency conditions: everyone is more likely to be affected.'
                 };
-
+ 
                 return {
                     color: currentLevel.color,
                     status: currentLevel.label,
@@ -340,8 +422,7 @@ export class MapInteractions {
                 };
             }
         }
-
-        // Giá trị mặc định cho AQI quá cao
+ 
         const hazardousLevel = this.aqiLevels[this.aqiLevels.length - 1];
         return {
             color: hazardousLevel.color,
@@ -349,12 +430,12 @@ export class MapInteractions {
             message: 'Health warning of emergency conditions: everyone is more likely to be affected.'
         };
     }
-
+ 
     showInfoWindow(position, data) {
         if (this.currentInfoWindow) {
             this.currentInfoWindow.close();
         }
-
+ 
         const aqiInfo = this.getAQIInfo(data.aqi);
         
         const content = `
@@ -381,12 +462,12 @@ export class MapInteractions {
                 </div>
             </div>
         `;
-
+ 
         this.currentInfoWindow = new google.maps.InfoWindow({
             position: position,
             content: content
         });
-
+ 
         this.currentInfoWindow.open(this.map);
     }
-}
+ }

@@ -14,18 +14,25 @@
             <div class="p-4">
                 <!-- Filter Section -->
                 <div class="mb-4 flex items-center gap-4">
-                    <div class="flex items-center">
-                        <label class="mr-2">Illness:</label>
-                        <select class="border rounded px-2 py-1">
-                            <option value="">--</option>
-                            <option value="chronic_bronchitis">Chronic bronchitis</option>
-                            <option value="asthma">Asthma</option>
-                            <option value="lung_cancer">Lung cancer</option>
-                            <option value="mental_illness">Mental illness</option>
-                        </select>
-                    </div>
-                    <button class="bg-blue-500 text-white px-4 py-1 rounded">Filter</button>
-                    <button class="bg-gray-500 text-white px-4 py-1 rounded">Cancel</button>
+                    <form action="{{ route('medical-records.index') }}" method="GET" class="flex items-center gap-4">
+                        <div class="flex items-center">
+                            <label class="mr-2">Illness:</label>
+                            <select name="illness" class="border rounded px-4 py-2 w-48">
+                                <option value="">All illnesses</option>
+                                @foreach($illnesses as $illness)
+                                    <option value="{{ $illness }}" {{ $selectedIllness == $illness ? 'selected' : '' }}>
+                                        {{ $illness }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-2 rounded transition duration-200">
+                            Filter
+                        </button>
+                        <a href="{{ route('medical-records.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-2 rounded transition duration-200">
+                            Cancel
+                        </a>
+                    </form>
                 </div>
 
                 <!-- Table -->
@@ -60,3 +67,7 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/medical-records.js') }}"></script>
+@endpush

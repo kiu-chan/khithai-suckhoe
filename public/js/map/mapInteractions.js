@@ -369,6 +369,7 @@ export class MapInteractions {
     }
 
     buildWMSUrl(lat, lng) {
+        console.log(1);
         const buffer = 0.001; // Buffer ~100m
         const bbox = `${lng - buffer},${lat - buffer},${lng + buffer},${lat + buffer}`;
 

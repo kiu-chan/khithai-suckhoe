@@ -373,7 +373,7 @@ export class MapInteractions {
         const buffer = 0.001; // Buffer ~100m
         const bbox = `${lng - buffer},${lat - buffer},${lng + buffer},${lat + buffer}`;
 
-        return `http://geoserver.tuaf.edu.vn/mt_thainguyen/wms?` +
+        return `https://geoserver.tuaf.edu.vn/mt_thainguyen/wms?` +
                `SERVICE=WMS&` +
                `VERSION=1.1.1&` +
                `REQUEST=GetFeatureInfo&` +
